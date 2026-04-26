@@ -3,13 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "dev:vinext": "vinext dev --port 3001",
-    "build:vinext": "vinext build",
-    "start:vinext": "vinext start"
+    "dev": "vinext dev --port 3001",
+    "build": "vinext build",
+    "start": "vinext start --port 3001",
+    "lint": "eslint"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -18,7 +15,6 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.11.0",
     "next": "16.2.4",
-    "next-auth": "^4.24.14",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "shadcn": "^4.5.0",

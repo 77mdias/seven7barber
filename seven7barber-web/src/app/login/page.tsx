@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const API_URL = "http://localhost:3000";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,18 +17,23 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
 
-    if (res?.error) {
-      setError("Credenciais inválidas");
-    } else {
+    try {
+      const res = await fetch(`${API_URL}/auth/sign-in/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error("Credenciais inválidas");
+      }
+
       router.push("/");
       router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Erro ao fazer login");
     }
   };
 

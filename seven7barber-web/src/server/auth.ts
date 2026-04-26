@@ -1,9 +1,9 @@
 "use server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = "http://localhost:3000";
 
 export async function signIn(email: string, password: string) {
-  const response = await fetch(`${API_URL}/auth/sign-in`, {
+  const response = await fetch(`${API_URL}/auth/sign-in/email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -13,7 +13,7 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(email: string, password: string, name: string) {
-  const response = await fetch(`${API_URL}/auth/sign-up`, {
+  const response = await fetch(`${API_URL}/auth/sign-up/email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, name }),
