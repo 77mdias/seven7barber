@@ -7,6 +7,11 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 ## [Unreleased]
 
 ### Added
+- Implementado Auth JWT no NestJS e rotas `/auth/login` e `/auth/register` (**TASK-006**, **TASK-007**).
+- Integrado o NextAuth no frontend usando a estratégia de Credentials (**TASK-008**).
+- Criadas as páginas premium de Login e Registro usando shadcn UI (**TASK-009**).
+- Cabeçalho da aplicação modificado para detectar estado da sessão do usuário.
+- Adicionado Mock de envio de e-mails (`EmailService`) para debug no backend (**TASK-010**).
 - Configuração de Monorepo via **Bun Workspaces**.
 - Pacote compartilhado `@seven7barber/shared` com DTOs e Enums (**TASK-005**).
 - Workflow de CI básico no GitHub Actions (**GAP-001**).
@@ -20,5 +25,6 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - GAP-002 (Database schema not applied) resolvido.
 
 ### Changed
+- Conclusão da **PHASE-02 (Authentication)**. Progresso 100%.
 - Conclusão da **PHASE-01 (Foundation)**. Progresso 100%.
 - Organização do workflow para o método HELL.

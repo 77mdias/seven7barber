@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { HeaderAuth } from "@/components/header-auth";
 
 export default function Home() {
   return (
@@ -17,12 +18,7 @@ export default function Home() {
             <a href="#sobre" className="text-sm font-medium text-[#732F3B] hover:text-white uppercase tracking-wide transition-colors">Sobre</a>
             <a href="#contato" className="text-sm font-medium text-[#732F3B] hover:text-white uppercase tracking-wide transition-colors">Contato</a>
           </nav>
-          <button className="relative group">
-            <div className="absolute inset-0 bg-[#732F3B] translate-x-1 translate-y-1 clip-slant-right z-0" />
-            <div className="relative bg-[#111] text-white px-6 py-2 clip-slant-right border-2 border-white font-heading font-bold uppercase tracking-wider text-sm hover:bg-[#732F3B] hover:text-white transition-colors z-10">
-              Agendar
-            </div>
-          </button>
+          <HeaderAuth />
         </div>
       </header>
 

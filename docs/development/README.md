@@ -8,8 +8,8 @@
 | Phase | Status | Progresso | Sprint Atual | Docs |
 |-------|--------|-----------|-------------|------|
 | PHASE-01 | ✅ Completa | 100% | - | [board](./PHASES/PHASE-01/phase-board.md) |
-| PHASE-02 | 🚧 Em progresso | 10% | Sprint-02 | [board](./PHASES/PHASE-02/phase-board.md) |
-| PHASE-03 | 🔵 Planejada | 0% | - | - |
+| PHASE-02 | ✅ Completa | 100% | - | [board](./PHASES/PHASE-02/phase-board.md) |
+| PHASE-03 | 🚧 Em progresso | 0% | Sprint-03 | [board](./PHASES/PHASE-03/phase-board.md) |
 
 ## 📁 Estrutura de Diretórios
 
@@ -25,18 +25,16 @@
 
 | ID | Descrição | Severidade | Status | Proposta |
 |----|-----------|------------|--------|----------|
-| GAP-002 | OAuth providers keys missing | 🟡 MAJOR | OPEN | - |
+| GAP-002 | OAuth providers keys missing | 🟡 MAJOR | OPEN | [GAP-002](./GAPS/GAP-002-oauth-keys-missing.md) |
 
 ## 📋 Tasks em Andamento
 
 | Task | Phase | Status | Blocker |
 |------|-------|--------|---------|
-| TASK-006 | PHASE-02 | 🚧 Em progresso | - |
+| TASK-011 | PHASE-03 | 🚧 Em progresso | - |
 
 ## 🔗 Documentos Recentes
 
-- 2026-04-26 — PHASE-01 completada. PHASE-02 iniciada.
-- 2026-04-26 — TASK-005 finalizada e Monorepo configurado.
-- 2026-04-26 — GitHub Actions CI configurado.
-- 2026-04-26 — TASK-002, TASK-003 e TASK-004 finalizadas.
-
+- 2026-04-26 — PHASE-02 finalizada. Autenticação JWT e NextAuth operacionais.
+- 2026-04-26 — HELL-SPEC-phase-01.md e GAP-002.md criados.
+- 2026-04-26 — TASKS de 006 a 010 documentadas.
