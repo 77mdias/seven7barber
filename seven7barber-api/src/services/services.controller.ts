@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
+import type { CreateServiceDto } from './dto/create-service.dto';
+import type { UpdateServiceDto } from './dto/update-service.dto';
+import { CreateServiceSchema } from './dto/create-service.dto';
+import { UpdateServiceSchema } from './dto/update-service.dto';
 import { ServicesService } from './services.service';
-import { CreateServiceDto, CreateServiceSchema } from './dto/create-service.dto';
-import { UpdateServiceDto, UpdateServiceSchema } from './dto/update-service.dto';
 
 @Controller('services')
 export class ServicesController {

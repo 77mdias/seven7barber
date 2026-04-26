@@ -5,9 +5,6 @@ import pino from 'pino';
 export class LoggerServiceImpl implements LoggerService {
   private logger = pino({
     level: process.env.LOG_LEVEL || 'info',
-    transport: process.env.NODE_ENV !== 'production'
-      ? { target: 'pino-pretty', options: { colorize: true } }
-      : undefined,
   });
 
   log(message: string, context?: string) {
@@ -15,6 +12,7 @@ export class LoggerServiceImpl implements LoggerService {
   }
 
   error(message: string, trace?: string, context?: string) {
+    console.error('LOGGER ERROR:', message, trace, context);
     this.logger.error({ context, trace }, message);
   }
 
