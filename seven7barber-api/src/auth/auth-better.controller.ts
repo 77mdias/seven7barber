@@ -1,33 +1,21 @@
-import { Controller, Req, Post, Get, Body } from "@nestjs/common";
+import { Controller, Req, All, Res, Next } from "@nestjs/common";
+import { toNodeHandler } from "better-auth/node";
 import { createBetterAuth } from "./better-auth";
 import { PrismaService } from "../prisma/prisma.service";
+import { Request, Response } from "express";
 
 @Controller("auth")
 export class BetterAuthController {
   private auth;
+  private handler;
 
   constructor(private readonly prisma: PrismaService) {
     this.auth = createBetterAuth(prisma);
+    this.handler = toNodeHandler(this.auth);
   }
 
-  // Delegate all requests to better-auth handler
-  @Post("sign-in")
-  async signIn(@Req() request: Request) {
-    return this.auth.handler(request);
-  }
-
-  @Post("sign-up")
-  async signUp(@Req() request: Request) {
-    return this.auth.handler(request);
-  }
-
-  @Post("sign-out")
-  async signOut(@Req() request: Request) {
-    return this.auth.handler(request);
-  }
-
-  @Get("session")
-  async getSession(@Req() request: Request) {
-    return this.auth.handler(request);
+  @All("*")
+  async handleAll(@Req() req: any, @Res() res: any) {
+    return this.handler(req, res);
   }
 }

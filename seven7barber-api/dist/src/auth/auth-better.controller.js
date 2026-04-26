@@ -14,57 +14,31 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BetterAuthController = void 0;
 const common_1 = require("@nestjs/common");
+const node_1 = require("better-auth/node");
 const better_auth_1 = require("./better-auth");
 const prisma_service_1 = require("../prisma/prisma.service");
 let BetterAuthController = class BetterAuthController {
     prisma;
     auth;
+    handler;
     constructor(prisma) {
         this.prisma = prisma;
         this.auth = (0, better_auth_1.createBetterAuth)(prisma);
+        this.handler = (0, node_1.toNodeHandler)(this.auth);
     }
-    async signIn(request) {
-        return this.auth.handler(request);
-    }
-    async signUp(request) {
-        return this.auth.handler(request);
-    }
-    async signOut(request) {
-        return this.auth.handler(request);
-    }
-    async getSession(request) {
-        return this.auth.handler(request);
+    async handleAll(req, res) {
+        return this.handler(req, res);
     }
 };
 exports.BetterAuthController = BetterAuthController;
 __decorate([
-    (0, common_1.Post)("sign-in"),
+    (0, common_1.All)("*"),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Request]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
-], BetterAuthController.prototype, "signIn", null);
-__decorate([
-    (0, common_1.Post)("sign-up"),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Request]),
-    __metadata("design:returntype", Promise)
-], BetterAuthController.prototype, "signUp", null);
-__decorate([
-    (0, common_1.Post)("sign-out"),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Request]),
-    __metadata("design:returntype", Promise)
-], BetterAuthController.prototype, "signOut", null);
-__decorate([
-    (0, common_1.Get)("session"),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Request]),
-    __metadata("design:returntype", Promise)
-], BetterAuthController.prototype, "getSession", null);
+], BetterAuthController.prototype, "handleAll", null);
 exports.BetterAuthController = BetterAuthController = __decorate([
     (0, common_1.Controller)("auth"),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

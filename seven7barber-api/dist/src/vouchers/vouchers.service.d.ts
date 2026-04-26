@@ -40,22 +40,22 @@ export declare class VouchersService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        expiresAt: Date | null;
         type: import("@prisma/client").$Enums.VoucherType;
         value: import("@prisma/client/runtime/client").Decimal;
         isActive: boolean;
         code: string;
         minServices: number;
-        expiresAt: Date | null;
     }>;
     deactivateVoucher(id: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        expiresAt: Date | null;
         type: import("@prisma/client").$Enums.VoucherType;
         value: import("@prisma/client/runtime/client").Decimal;
         isActive: boolean;
         code: string;
         minServices: number;
-        expiresAt: Date | null;
     }>;
 }

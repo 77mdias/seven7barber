@@ -10,6 +10,7 @@ exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
+const auth_better_controller_1 = require("./auth-better.controller");
 const user_module_1 = require("../user/user.module");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
@@ -28,7 +29,7 @@ exports.AuthModule = AuthModule = __decorate([
             }),
         ],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
-        controllers: [auth_controller_1.AuthController],
+        controllers: [auth_controller_1.AuthController, auth_better_controller_1.BetterAuthController],
         exports: [auth_service_1.AuthService],
     })
 ], AuthModule);
