@@ -6,9 +6,10 @@ export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getTodayAppointments() {
+    // Get today's date in UTC for consistent timezone handling
     const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
 
     return this.prisma.appointment.findMany({
       where: {
@@ -17,7 +18,9 @@ export class AdminService {
       include: {
         client: { select: { id: true, name: true, email: true } },
         barber: { select: { id: true, name: true } },
-        service: { select: { id: true, name: true, price: true, duration: true } },
+        service: {
+          select: { id: true, name: true, price: true, duration: true },
+        },
       },
       orderBy: { dateTime: 'asc' },
     });
@@ -65,7 +68,13 @@ export class AdminService {
   }
 
   async updateAppointmentStatus(id: string, status: string) {
-    const validStatuses = ['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
+    const validStatuses = [
+      'SCHEDULED',
+      'CONFIRMED',
+      'COMPLETED',
+      'CANCELLED',
+      'NO_SHOW',
+    ];
     if (!validStatuses.includes(status)) {
       throw new Error(`Invalid status: ${status}`);
     }
@@ -139,32 +148,31 @@ export class AdminService {
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const [
-      todayAppointments,
-      weekAppointments,
-      weekCompleted,
-      reviews,
-    ] = await Promise.all([
-      this.prisma.appointment.count({
-        where: { dateTime: { gte: startOfDay, lte: endOfDay } },
-      }),
-      this.prisma.appointment.findMany({
-        where: { dateTime: { gte: weekAgo } },
-        include: { service: true },
-      }),
-      this.prisma.appointment.count({
-        where: { dateTime: { gte: weekAgo }, status: 'COMPLETED' },
-      }),
-      this.prisma.serviceHistory.findMany({
-        where: {
-          createdAt: { gte: weekAgo },
-        },
-      }),
-    ]);
+    const [todayAppointments, weekAppointments, weekCompleted, reviews] =
+      await Promise.all([
+        this.prisma.appointment.count({
+          where: { dateTime: { gte: startOfDay, lte: endOfDay } },
+        }),
+        this.prisma.appointment.findMany({
+          where: { dateTime: { gte: weekAgo } },
+          include: { service: true },
+        }),
+        this.prisma.appointment.count({
+          where: { dateTime: { gte: weekAgo }, status: 'COMPLETED' },
+        }),
+        this.prisma.serviceHistory.findMany({
+          where: {
+            createdAt: { gte: weekAgo },
+          },
+        }),
+      ]);
 
     const weekRevenue = (weekAppointments as any[])
       .filter((a: any) => a.status === 'COMPLETED')
-      .reduce((sum: number, a: any) => sum + parseFloat(a.service.price.toString()), 0);
+      .reduce(
+        (sum: number, a: any) => sum + parseFloat(a.service.price.toString()),
+        0,
+      );
 
     return {
       todayAppointments,

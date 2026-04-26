@@ -24,7 +24,10 @@ export class AvailabilityService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAvailableSlots(date: Date, serviceIds: string[]): Promise<TimeSlot[]> {
+  async getAvailableSlots(
+    date: Date,
+    serviceIds: string[],
+  ): Promise<TimeSlot[]> {
     const dateStr = date.toISOString().split('T')[0];
 
     // Get all barbers
@@ -72,20 +75,26 @@ export class AvailabilityService {
     for (const barber of barbers) {
       // Get barber's booked times
       const barberAppointments = existingAppointments.filter(
-        (a) => a.barberId === barber.id
+        (a) => a.barberId === barber.id,
       );
 
-      for (let mins = startMinutes; mins + totalDuration + workingHours.bufferMinutes <= endMinutes; mins += slotInterval) {
+      for (
+        let mins = startMinutes;
+        mins + totalDuration + workingHours.bufferMinutes <= endMinutes;
+        mins += slotInterval
+      ) {
         const slotTime = `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
         const slotEndTime = `${String(Math.floor((mins + totalDuration) / 60)).padStart(2, '0')}:${String((mins + totalDuration) % 60).padStart(2, '0')}`;
 
         // Check if slot conflicts with existing appointments
+        // NOTE: All times are handled in UTC for consistency regardless of server timezone
         const hasConflict = barberAppointments.some((appt) => {
           const apptTime = appt.dateTime;
-          const apptMins = apptTime.getHours() * 60 + apptTime.getMinutes();
-          const apptEndMins = apptMins + appt.service.duration + workingHours.bufferMinutes;
+          const apptMins = apptTime.getUTCHours() * 60 + apptTime.getUTCMinutes();
+          const apptEndMins =
+            apptMins + appt.service.duration + workingHours.bufferMinutes;
 
-          return (mins < apptEndMins && mins + totalDuration > apptMins);
+          return mins < apptEndMins && mins + totalDuration > apptMins;
         });
 
         if (!hasConflict) {
