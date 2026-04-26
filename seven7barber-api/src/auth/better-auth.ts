@@ -1,0 +1,19 @@
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/dist/adapters/prisma-adapter";
+import { PrismaService } from "../prisma/prisma.service";
+
+export const createBetterAuth = (prisma: PrismaService) => {
+  return betterAuth({
+    database: prismaAdapter(prisma, {
+      provider: "postgresql",
+    }),
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 6,
+    },
+    session: {
+      expiresIn: 60 * 60 * 24 * 7, // 7 days
+      updateAge: 60 * 60 * 24, // 24 hours
+    },
+  });
+};
