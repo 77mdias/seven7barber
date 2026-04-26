@@ -1,6 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import * as crypto from 'crypto';
+
+function computeSignature(sessionId: string, status: string): string {
+  return crypto
+    .createHmac('sha256', process.env.PAYMENT_WEBHOOK_SECRET || 'test-secret')
+    .update(JSON.stringify({ sessionId, status }))
+    .digest('hex');
+}
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
@@ -38,7 +46,7 @@ describe('PaymentsService', () => {
           appointmentId: 'invalid-id',
           amount: 100,
           method: 'CREDIT_CARD',
-        })
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -76,7 +84,7 @@ describe('PaymentsService', () => {
       const result = await service.processPaymentCallback({
         sessionId: createResult.sessionId,
         status: 'APPROVED',
-        signature: 'valid-signature',
+        signature: computeSignature(createResult.sessionId, 'APPROVED'),
       });
 
       expect(result.status).toBe('APPROVED');
@@ -92,7 +100,7 @@ describe('PaymentsService', () => {
       const result = await service.processPaymentCallback({
         sessionId: createResult.sessionId,
         status: 'FAILED',
-        signature: 'valid-signature',
+        signature: computeSignature(createResult.sessionId, 'FAILED'),
       });
 
       expect(result.status).toBe('FAILED');
@@ -110,7 +118,7 @@ describe('PaymentsService', () => {
           sessionId: createResult.sessionId,
           status: 'APPROVED',
           signature: 'invalid-signature',
-        })
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -120,7 +128,7 @@ describe('PaymentsService', () => {
           sessionId: 'invalid-session',
           status: 'APPROVED',
           signature: 'any-signature',
-        })
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -141,7 +149,7 @@ describe('PaymentsService', () => {
 
     it('should throw for non-existent session', async () => {
       await expect(service.getPaymentSession('invalid-id')).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });

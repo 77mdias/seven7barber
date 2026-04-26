@@ -16,7 +16,21 @@ import { MetricsModule } from './metrics/metrics.module';
 import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, EmailModule, ServicesModule, AvailabilityModule, AdminModule, ReviewsModule, VouchersModule, PaymentsModule, NotificationsModule, HealthModule, MetricsModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    AuthModule,
+    EmailModule,
+    ServicesModule,
+    AvailabilityModule,
+    AdminModule,
+    ReviewsModule,
+    VouchersModule,
+    PaymentsModule,
+    NotificationsModule,
+    HealthModule,
+    MetricsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -5,12 +5,32 @@ describe('ReviewsService', () => {
   // Mock reviews service implementation
   class ReviewsService {
     private reviews: any[] = [
-      { id: 'rev-1', rating: 5, barberId: 'barber-1', createdAt: new Date('2026-04-20') },
-      { id: 'rev-2', rating: 4, barberId: 'barber-1', createdAt: new Date('2026-04-18') },
-      { id: 'rev-3', rating: 5, barberId: 'barber-2', createdAt: new Date('2026-04-15') },
+      {
+        id: 'rev-1',
+        rating: 5,
+        barberId: 'barber-1',
+        createdAt: new Date('2026-04-20'),
+      },
+      {
+        id: 'rev-2',
+        rating: 4,
+        barberId: 'barber-1',
+        createdAt: new Date('2026-04-18'),
+      },
+      {
+        id: 'rev-3',
+        rating: 5,
+        barberId: 'barber-2',
+        createdAt: new Date('2026-04-15'),
+      },
     ];
 
-    async createReview(data: { appointmentId: string; rating: number; feedback?: string; images?: string[] }) {
+    async createReview(data: {
+      appointmentId: string;
+      rating: number;
+      feedback?: string;
+      images?: string[];
+    }) {
       if (data.rating < 1 || data.rating > 5) {
         throw new Error('Rating must be between 1 and 5');
       }
@@ -61,7 +81,7 @@ describe('ReviewsService', () => {
         service.createReview({
           appointmentId: 'appt-1',
           rating: 0,
-        })
+        }),
       ).rejects.toThrow('Rating must be between 1 and 5');
     });
 
@@ -70,7 +90,7 @@ describe('ReviewsService', () => {
         service.createReview({
           appointmentId: 'appt-1',
           rating: 6,
-        })
+        }),
       ).rejects.toThrow('Rating must be between 1 and 5');
     });
 
@@ -93,7 +113,10 @@ describe('ReviewsService', () => {
     });
 
     it('should support images array', async () => {
-      const images = ['http://example.com/img1.jpg', 'http://example.com/img2.jpg'];
+      const images = [
+        'http://example.com/img1.jpg',
+        'http://example.com/img2.jpg',
+      ];
       const review = await service.createReview({
         appointmentId: 'appt-1',
         rating: 5,

@@ -90,7 +90,8 @@ export class AvailabilityService {
         // NOTE: All times are handled in UTC for consistency regardless of server timezone
         const hasConflict = barberAppointments.some((appt) => {
           const apptTime = appt.dateTime;
-          const apptMins = apptTime.getUTCHours() * 60 + apptTime.getUTCMinutes();
+          const apptMins =
+            apptTime.getUTCHours() * 60 + apptTime.getUTCMinutes();
           const apptEndMins =
             apptMins + appt.service.duration + workingHours.bufferMinutes;
 

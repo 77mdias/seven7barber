@@ -22,15 +22,23 @@ describe('BookingService', () => {
       slotId: string;
       clientId: string;
     }) {
-      const service = await this.prisma.service.findUnique({ where: { id: data.serviceId } });
+      const service = await this.prisma.service.findUnique({
+        where: { id: data.serviceId },
+      });
       if (!service) throw new NotFoundException('Service not found');
 
-      const barber = await this.prisma.user.findUnique({ where: { id: data.barberId } });
-      if (!barber || barber.role !== 'BARBER') throw new NotFoundException('Barber not found');
+      const barber = await this.prisma.user.findUnique({
+        where: { id: data.barberId },
+      });
+      if (!barber || barber.role !== 'BARBER')
+        throw new NotFoundException('Barber not found');
 
-      const slot = await this.prisma.timeSlot.findUnique({ where: { id: data.slotId } });
+      const slot = await this.prisma.timeSlot.findUnique({
+        where: { id: data.slotId },
+      });
       if (!slot) throw new NotFoundException('TimeSlot not found');
-      if (slot.isBooked) throw new BadRequestException('TimeSlot already booked');
+      if (slot.isBooked)
+        throw new BadRequestException('TimeSlot already booked');
 
       return this.prisma.appointment.create({
         data: {
@@ -70,7 +78,12 @@ describe('BookingService', () => {
       const mockService = { id: 'svc-1', name: 'Corte', price: '35.00' };
       const mockBarber = { id: 'barber-1', name: 'João', role: 'BARBER' };
       const mockSlot = { id: 'slot-1', startTime: new Date(), isBooked: false };
-      const mockAppt = { id: 'appt-1', serviceId: 'svc-1', barberId: 'barber-1', slotId: 'slot-1' };
+      const mockAppt = {
+        id: 'appt-1',
+        serviceId: 'svc-1',
+        barberId: 'barber-1',
+        slotId: 'slot-1',
+      };
 
       mockPrisma.service.findUnique.mockResolvedValue(mockService);
       mockPrisma.user.findUnique.mockResolvedValue(mockBarber);
@@ -90,42 +103,60 @@ describe('BookingService', () => {
 
     it('C24 | RED | createBooking_throws_service_not_found | ✅ FAIL', async () => {
       mockPrisma.service.findUnique.mockResolvedValue(null);
-      await expect(service.createBooking({
-        serviceId: 'invalid',
-        barberId: 'barber-1',
-        slotId: 'slot-1',
-        clientId: 'client-1',
-      })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.createBooking({
+          serviceId: 'invalid',
+          barberId: 'barber-1',
+          slotId: 'slot-1',
+          clientId: 'client-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('C25 | RED | createBooking_throws_barber_not_found | ✅ FAIL', async () => {
       mockPrisma.service.findUnique.mockResolvedValue({ id: 'svc-1' });
       mockPrisma.user.findUnique.mockResolvedValue(null);
-      await expect(service.createBooking({
-        serviceId: 'svc-1',
-        barberId: 'invalid',
-        slotId: 'slot-1',
-        clientId: 'client-1',
-      })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.createBooking({
+          serviceId: 'svc-1',
+          barberId: 'invalid',
+          slotId: 'slot-1',
+          clientId: 'client-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('C26 | RED | createBooking_throws_slot_already_booked | ✅ FAIL', async () => {
       mockPrisma.service.findUnique.mockResolvedValue({ id: 'svc-1' });
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'barber-1', role: 'BARBER' });
-      mockPrisma.timeSlot.findUnique.mockResolvedValue({ id: 'slot-1', isBooked: true });
-      await expect(service.createBooking({
-        serviceId: 'svc-1',
-        barberId: 'barber-1',
-        slotId: 'slot-1',
-        clientId: 'client-1',
-      })).rejects.toThrow(BadRequestException);
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'barber-1',
+        role: 'BARBER',
+      });
+      mockPrisma.timeSlot.findUnique.mockResolvedValue({
+        id: 'slot-1',
+        isBooked: true,
+      });
+      await expect(
+        service.createBooking({
+          serviceId: 'svc-1',
+          barberId: 'barber-1',
+          slotId: 'slot-1',
+          clientId: 'client-1',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('C27 | RED | createBooking_rollback_on_error | ✅ FAIL', async () => {
       // RF-05: Rollback Suave - if booking creation fails, slot should NOT be marked as booked
       mockPrisma.service.findUnique.mockResolvedValue({ id: 'svc-1' });
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'barber-1', role: 'BARBER' });
-      mockPrisma.timeSlot.findUnique.mockResolvedValue({ id: 'slot-1', isBooked: false });
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'barber-1',
+        role: 'BARBER',
+      });
+      mockPrisma.timeSlot.findUnique.mockResolvedValue({
+        id: 'slot-1',
+        isBooked: false,
+      });
       mockPrisma.appointment.create.mockRejectedValue(new Error('DB Error'));
 
       try {
@@ -164,7 +195,9 @@ describe('BookingService', () => {
 
     it('C29 | RED | getBookingSummary_throws_not_found | ✅ FAIL', async () => {
       mockPrisma.appointment.findUnique.mockResolvedValue(null);
-      await expect(service.getBookingSummary('invalid')).rejects.toThrow(NotFoundException);
+      await expect(service.getBookingSummary('invalid')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

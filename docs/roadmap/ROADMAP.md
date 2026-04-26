@@ -103,13 +103,42 @@ This roadmap outlines the development phases for Tempest Seven7Barber, a portfol
 
 ---
 
-### Phase 7: Future Enhancements (Post-Launch)
+### Phase 7: Security Hardening (Week 8-9)
+**Goal:** Fix all HIGH severity security issues from code review
+
+| Task | Deliverables | Status |
+|------|--------------|--------|
+| Availability race condition | Prisma SERIALIZABLE transaction | 🟡 PLANNING |
+| Timezone consistency | UTC handling for all dates | 🟡 PLANNING |
+| Payment signature | Real signature verification | 🟡 PLANNING |
+| Token refresh | JWT refresh endpoint | 🟡 PLANNING |
+| Rate limiting | @nestjs/throttler on auth | 🟡 PLANNING |
+
+**Milestone:** 🔒 Production security baseline established
+
+---
+
+### Phase 8: Code Quality & Polish (Week 9-10)
+**Goal:** Fix MEDIUM severity issues and improve robustness
+
+| Task | Deliverables | Status |
+|------|--------------|--------|
+| Error handling | Proper NestJS exceptions | 🟡 PLANNING |
+| Data privacy | No password hash leaks | 🟡 PLANNING |
+| Error boundaries | React error.tsx files | 🟡 PLANNING |
+| UI completeness | All elements functional | 🟡 PLANNING |
+
+**Milestone:** 🏆 Production-quality codebase
+
+---
+
+### Phase 9: Future Enhancements (Post-Launch)
 **Goal:** Additional features for production
 
 | Task | Deliverables | Status |
 |------|--------------|--------|
-| Real OAuth | Production OAuth providers | 🔮 PROPOSTO |
-| Push notifications | SMS/WhatsApp reminders | 🔮 PROPOSTO |
+| Real OAuth | GitHub/Google/Discord providers | 🔮 PROPOSTO |
+| Push notifications | Twilio SMS/WhatsApp | 🔮 PROPOSTO |
 | Loyalty program | Points, rewards tiers | 🔮 PROPOSTO |
 | Waiting list | Queue for fully-booked slots | 🔮 PROPOSTO |
 | Recurring appointments | Weekly/monthly bookings | 🔮 PROPOSTO |
@@ -128,10 +157,12 @@ Week 3-5:   Booking    ███████████████████
 Week 5-6:   Reviews    ████████████████████ 100%
 Week 6-7:   Admin      ████████████████████ 100%
 Week 7-8:   Launch     ████████████████████ 100%
-Week 8-9:   Future     ░░░░░░░░░░░░░░░░░░░░░ (planned)
+Week 8-9:   Security   ░░░░░░░░░░░░░░░░░░░░░ (planning)
+Week 9-10:  Quality    ░░░░░░░░░░░░░░░░░░░░░ (planning)
+Week 10+:   Future     ░░░░░░░░░░░░░░░░░░░░░ (planned)
 ```
 
-**Overall Progress: ~95% — Core development complete, production ready**
+**Overall Progress: ~90% — Core complete, hardening in progress**
 
 ---
 

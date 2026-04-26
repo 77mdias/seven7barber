@@ -5,7 +5,7 @@ describe('AdminService', () => {
   // Mock admin service implementation
   class AdminService {
     private mockAppointments: Map<string, { status: string }> = new Map([
-      ['appt-pending', { status: 'SCHEDULED' }],  // For successful update test
+      ['appt-pending', { status: 'SCHEDULED' }], // For successful update test
       ['appt-completed', { status: 'COMPLETED' }], // For rejection test
     ]);
 
@@ -99,7 +99,10 @@ describe('AdminService', () => {
 
   describe('updateAppointmentStatus', () => {
     it('should update status and return appointment', async () => {
-      const result = await service.updateAppointmentStatus('appt-pending', 'COMPLETED');
+      const result = await service.updateAppointmentStatus(
+        'appt-pending',
+        'COMPLETED',
+      );
 
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('status', 'COMPLETED');
@@ -107,9 +110,9 @@ describe('AdminService', () => {
 
     it('should reject invalid status transitions', () => {
       // COMPLETED cannot be changed back to SCHEDULED
-      expect(() => service.updateAppointmentStatus('appt-completed', 'SCHEDULED')).toThrow(
-        'Cannot change status of completed appointment'
-      );
+      expect(() =>
+        service.updateAppointmentStatus('appt-completed', 'SCHEDULED'),
+      ).toThrow('Cannot change status of completed appointment');
     });
   });
 

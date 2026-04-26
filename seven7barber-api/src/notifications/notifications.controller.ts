@@ -1,7 +1,16 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { NotificationsService, EmailType, EmailData } from './notifications.service';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  NotificationsService,
+  EmailType,
+  EmailData,
+} from './notifications.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('notifications')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 

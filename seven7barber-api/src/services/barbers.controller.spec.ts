@@ -74,7 +74,9 @@ describe('BarbersController', () => {
     it('C12 | RED | findOne_throws_404 | ✅ FAIL', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
-      await expect(controller.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('C13 | GREEN | findOne_returns_barber | ✅ PASS', async () => {

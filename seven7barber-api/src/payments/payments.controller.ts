@@ -1,5 +1,8 @@
 import { Controller, Post, Get, Body, Param } from '@nestjs/common';
-import type { CreatePaymentSessionDto, PaymentCallbackDto } from './payments.service';
+import type {
+  CreatePaymentSessionDto,
+  PaymentCallbackDto,
+} from './payments.service';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')

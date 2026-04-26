@@ -26,7 +26,7 @@ if (!jwtSecret) {
       {
         name: 'auth',
         ttl: 60000, // 1 minute in milliseconds
-        limit: 5,   // 5 attempts per minute
+        limit: 5, // 5 attempts per minute
       },
     ]),
   ],

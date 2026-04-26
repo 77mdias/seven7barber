@@ -34,7 +34,9 @@ export class ReviewsService {
     });
 
     if (existingReview) {
-      throw new BadRequestException('Review already exists for this appointment');
+      throw new BadRequestException(
+        'Review already exists for this appointment',
+      );
     }
 
     return this.prisma.serviceHistory.create({

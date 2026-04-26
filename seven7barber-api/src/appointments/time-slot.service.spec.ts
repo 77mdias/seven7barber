@@ -15,7 +15,10 @@ describe('TimeSlotService', () => {
   class TimeSlotService {
     constructor(private prisma: any) {}
 
-    async findAvailableSlots(barberId: string, serviceDuration: number): Promise<any[]> {
+    async findAvailableSlots(
+      barberId: string,
+      serviceDuration: number,
+    ): Promise<any[]> {
       return this.prisma.timeSlot.findMany({
         where: {
           barberId,
@@ -34,7 +37,9 @@ describe('TimeSlotService', () => {
     }
 
     async isAvailable(slotId: string): Promise<boolean> {
-      const slot = await this.prisma.timeSlot.findUnique({ where: { id: slotId } });
+      const slot = await this.prisma.timeSlot.findUnique({
+        where: { id: slotId },
+      });
       return slot ? !slot.isBooked : false;
     }
 
@@ -60,8 +65,20 @@ describe('TimeSlotService', () => {
     it('C14 | RED | findAvailableSlots_returns_unbooked_slots | ✅ FAIL', async () => {
       // Arrange
       const mockSlots = [
-        { id: 'slot-1', barberId: 'barber-1', startTime: new Date(), endTime: new Date(), isBooked: false },
-        { id: 'slot-2', barberId: 'barber-1', startTime: new Date(), endTime: new Date(), isBooked: false },
+        {
+          id: 'slot-1',
+          barberId: 'barber-1',
+          startTime: new Date(),
+          endTime: new Date(),
+          isBooked: false,
+        },
+        {
+          id: 'slot-2',
+          barberId: 'barber-1',
+          startTime: new Date(),
+          endTime: new Date(),
+          isBooked: false,
+        },
       ];
       mockPrisma.timeSlot.findMany.mockResolvedValue(mockSlots);
 
@@ -91,7 +108,9 @@ describe('TimeSlotService', () => {
   describe('findOne', () => {
     it('C16 | RED | findOne_throws_NotFoundException_when_not_found | ✅ FAIL', async () => {
       mockPrisma.timeSlot.findUnique.mockResolvedValue(null);
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('C17 | RED | findOne_returns_slot_when_exists | ✅ FAIL', async () => {
@@ -149,7 +168,9 @@ describe('TimeSlotService', () => {
     it('C22 | RED | bookSlot_throws_when_already_booked | ✅ FAIL', async () => {
       const mockSlot = { id: 'slot-1', isBooked: true };
       mockPrisma.timeSlot.findUnique.mockResolvedValue(mockSlot);
-      await expect(service.bookSlot('slot-1')).rejects.toThrow('Slot already booked');
+      await expect(service.bookSlot('slot-1')).rejects.toThrow(
+        'Slot already booked',
+      );
     });
   });
 });

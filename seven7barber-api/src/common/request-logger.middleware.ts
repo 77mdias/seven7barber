@@ -18,7 +18,7 @@ export function requestLoggerMiddleware(
     const duration = Date.now() - start;
     logger.info(
       { context: 'RequestLogger' },
-      `${method} ${originalUrl} ${statusCode} ${duration}ms - ${ip}`
+      `${method} ${originalUrl} ${statusCode} ${duration}ms - ${ip}`,
     );
   });
 

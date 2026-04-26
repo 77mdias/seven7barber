@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const API_URL = "http://localhost:3000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface Session {
   user: {
@@ -18,7 +18,7 @@ export function useSession() {
 
   const fetchSession = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/auth/session`, {
+      const res = await fetch(`${API_URL}/auth/get-session`, {
         credentials: "include",
       });
       if (res.ok) {

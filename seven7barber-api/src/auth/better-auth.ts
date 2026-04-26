@@ -1,14 +1,21 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { PrismaService } from "../prisma/prisma.service";
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { PrismaService } from '../prisma/prisma.service';
 
 export const createBetterAuth = (prisma: PrismaService) => {
   return betterAuth({
-    baseURL: process.env.API_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    basePath: "/auth",
-    trustedOrigins: ["http://localhost:3001", "http://localhost:5173", "http://0.0.0.0:3001"],
+    baseURL:
+      process.env.API_URL ||
+      process.env.BETTER_AUTH_URL ||
+      'http://localhost:3000',
+    basePath: '/auth',
+    trustedOrigins: [
+      'http://localhost:3001',
+      'http://localhost:5173',
+      'http://0.0.0.0:3001',
+    ],
     database: prismaAdapter(prisma, {
-      provider: "postgresql",
+      provider: 'postgresql',
     }),
     emailAndPassword: {
       enabled: true,

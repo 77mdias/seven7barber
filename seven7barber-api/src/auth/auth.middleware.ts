@@ -1,6 +1,6 @@
-import { Injectable, NestMiddleware, Req, Res } from "@nestjs/common";
-import { createBetterAuth } from "./better-auth";
-import { PrismaService } from "../prisma/prisma.service";
+import { Injectable, NestMiddleware, Req, Res } from '@nestjs/common';
+import { createBetterAuth } from './better-auth';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class BetterAuthMiddleware implements NestMiddleware {
@@ -23,7 +23,9 @@ export class BetterAuthMiddleware implements NestMiddleware {
       const request = new Request(fullUrl, {
         method: req.method,
         headers: req.headers as HeadersInit,
-        body: ['POST', 'PUT', 'PATCH'].includes(req.method) ? req.body : undefined,
+        body: ['POST', 'PUT', 'PATCH'].includes(req.method)
+          ? req.body
+          : undefined,
       });
 
       const response = await this.auth.handler(request);

@@ -41,8 +41,20 @@ describe('BarbersService', () => {
     it('C5 | RED | findAvailableBarbers_returns_only_verified_barbers | ✅ FAIL', async () => {
       // Arrange
       const mockBarbers = [
-        { id: 'barber-1', name: 'João', role: 'BARBER', verified: true, image: null },
-        { id: 'barber-2', name: 'Maria', role: 'BARBER', verified: true, image: null },
+        {
+          id: 'barber-1',
+          name: 'João',
+          role: 'BARBER',
+          verified: true,
+          image: null,
+        },
+        {
+          id: 'barber-2',
+          name: 'Maria',
+          role: 'BARBER',
+          verified: true,
+          image: null,
+        },
       ];
       mockPrisma.user.findMany.mockResolvedValue(mockBarbers);
 
@@ -76,7 +88,9 @@ describe('BarbersService', () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('C8 | RED | findOne_returns_barber_when_exists | ✅ FAIL', async () => {
@@ -108,7 +122,9 @@ describe('BarbersService', () => {
       mockPrisma.user.findUnique.mockResolvedValue(mockClient);
 
       // Act & Assert
-      await expect(service.findOne('client-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('client-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

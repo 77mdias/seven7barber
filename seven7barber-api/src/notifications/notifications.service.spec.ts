@@ -1,9 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
-import { NotificationsService, EmailType, EmailData } from './notifications.service';
+import {
+  NotificationsService,
+  EmailType,
+  EmailData,
+} from './notifications.service';
 
 // Mock email queue
-const mockEmailQueue: Array<{ template: EmailType; data: EmailData; scheduledAt: Date }> = [];
+const mockEmailQueue: Array<{
+  template: EmailType;
+  data: EmailData;
+  scheduledAt: Date;
+}> = [];
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
@@ -47,7 +55,7 @@ describe('NotificationsService', () => {
       const invalidData = { ...validData, clientEmail: '' };
 
       await expect(
-        service.sendBookingConfirmation(invalidData)
+        service.sendBookingConfirmation(invalidData),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -161,7 +169,11 @@ describe('NotificationsService', () => {
 
     it('should add email to queue with delay', async () => {
       const delay = 60 * 60 * 1000; // 1 hour
-      const result = await service.queueEmail('BOOKING_CONFIRMATION', validData, delay);
+      const result = await service.queueEmail(
+        'BOOKING_CONFIRMATION',
+        validData,
+        delay,
+      );
 
       expect(result.queued).toBe(true);
       expect(result.scheduledFor).toBeInstanceOf(Date);
@@ -169,7 +181,11 @@ describe('NotificationsService', () => {
 
     it('should schedule email for future processing', async () => {
       const delay = 60 * 60 * 1000; // 1 hour
-      const result = await service.queueEmail('BOOKING_CONFIRMATION', validData, delay);
+      const result = await service.queueEmail(
+        'BOOKING_CONFIRMATION',
+        validData,
+        delay,
+      );
 
       const scheduledTime = result.scheduledFor!.getTime();
       const now = Date.now();

@@ -1,6 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 
-export type EmailType = 'BOOKING_CONFIRMATION' | 'REMINDER' | 'CANCELLATION' | 'REVIEW_REQUEST';
+export type EmailType =
+  | 'BOOKING_CONFIRMATION'
+  | 'REMINDER'
+  | 'CANCELLATION'
+  | 'REVIEW_REQUEST';
 
 export interface EmailData {
   appointmentId: string;
@@ -25,7 +29,11 @@ export interface QueueEmailResult {
 }
 
 // Simple in-memory queue for dev
-const emailQueue: Array<{ template: EmailType; data: EmailData; scheduledAt: Date }> = [];
+const emailQueue: Array<{
+  template: EmailType;
+  data: EmailData;
+  scheduledAt: Date;
+}> = [];
 
 @Injectable()
 export class NotificationsService {
@@ -64,7 +72,9 @@ export class NotificationsService {
       return { success: false };
     }
 
-    const reminderTime = new Date(data.dateTime.getTime() - 24 * 60 * 60 * 1000);
+    const reminderTime = new Date(
+      data.dateTime.getTime() - 24 * 60 * 60 * 1000,
+    );
     const content = `
       Prezado(a) ${data.clientName},
 
@@ -135,7 +145,11 @@ export class NotificationsService {
     };
   }
 
-  async queueEmail(template: EmailType, data: EmailData, delay?: number): Promise<QueueEmailResult> {
+  async queueEmail(
+    template: EmailType,
+    data: EmailData,
+    delay?: number,
+  ): Promise<QueueEmailResult> {
     const scheduledAt = new Date(Date.now() + (delay || 0));
     emailQueue.push({ template, data, scheduledAt });
 

@@ -14,7 +14,9 @@ describe('ServicesController', () => {
     }
 
     async findOne(id: string) {
-      const service = await this.mockPrisma.service.findUnique({ where: { id } });
+      const service = await this.mockPrisma.service.findUnique({
+        where: { id },
+      });
       if (!service) throw new NotFoundException(`Service ${id} not found`);
       return service;
     }
@@ -79,7 +81,9 @@ describe('ServicesController', () => {
     it('C3 | RED | findOne_throws_404_when_not_found | ✅ FAIL', async () => {
       mockPrisma.service.findUnique.mockResolvedValue(null);
 
-      await expect(controller.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('C4 | GREEN | findOne_returns_service | ✅ PASS', async () => {

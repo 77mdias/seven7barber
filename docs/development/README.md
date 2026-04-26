@@ -13,8 +13,11 @@
 | PHASE-04 | ✅ Completa | 100% (4/4) | - | [board](./PHASES/PHASE-04/phase-board.md) |
 | PHASE-05 | ✅ Completa | 100% (4/4) | - | [board](./PHASES/PHASE-05/phase-board.md) |
 | PHASE-06 | ✅ Completa | 100% (6/6) | - | [board](./PHASES/PHASE-06/phase-board.md) |
+| PHASE-07 | 🟡 Planejamento | 0% (0/8) | - | [board](./PHASES/PHASE-07/phase-board.md) |
+| PHASE-08 | 🟡 Planejamento | 0% (0/8) | - | [board](./PHASES/PHASE-08/phase-board.md) |
+| PHASE-09 | 🔮 Proposto | 0% | - | [phase](./PHASES/PHASE-09/phase.md) |
 
-🎉 **Todas as fases de desenvolvimento completas! Projeto pronto para produção.**
+🔒 **Novas fases de hardening criadas: PHASE-07 (Security) e PHASE-08 (Quality)**
 
 ## 📁 Estrutura de Diretórios
 

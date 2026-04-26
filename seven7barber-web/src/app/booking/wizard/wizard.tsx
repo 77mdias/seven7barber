@@ -72,11 +72,36 @@ export function BookingWizard() {
 
   const submitBooking = useCallback(async () => {
     setState(s => ({ ...s, isSubmitting: true }));
-    // TODO: Submit to API
-    await new Promise(r => setTimeout(r, 1000));
-    alert('Agendamento realizado com sucesso!');
-    setState(createInitialState());
-  }, []);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${API_URL}/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          serviceId: state.serviceId,
+          barberId: state.barberId,
+          slotId: state.slotId,
+          dateTime: state.slotDate && state.slotTime
+            ? `${state.slotDate}T${state.slotTime}`
+            : undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Erro ao criar agendamento' }));
+        throw new Error(error.message || 'Erro ao criar agendamento');
+      }
+
+      alert('Agendamento realizado com sucesso!');
+      setState(createInitialState());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao criar agendamento';
+      alert(message);
+    } finally {
+      setState(s => ({ ...s, isSubmitting: false }));
+    }
+  }, [state.serviceId, state.barberId, state.slotId, state.slotDate, state.slotTime]);
 
   const renderStep = () => {
     switch (state.currentStep) {

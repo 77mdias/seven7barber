@@ -116,13 +116,13 @@ describe('VouchersService', () => {
 
     it('should reject non-existent voucher', async () => {
       await expect(service.validateVoucher('INVALID')).rejects.toThrow(
-        'Voucher not found'
+        'Voucher not found',
       );
     });
 
     it('should reject expired voucher', async () => {
       await expect(service.validateVoucher('EXPIRED')).rejects.toThrow(
-        'Voucher has expired'
+        'Voucher has expired',
       );
     });
   });

@@ -33,7 +33,7 @@ export class VouchersService {
 
       if (userAppointmentCount < voucher.minServices) {
         throw new BadRequestException(
-          `This voucher requires at least ${voucher.minServices} completed services`
+          `This voucher requires at least ${voucher.minServices} completed services`,
         );
       }
     }
@@ -49,11 +49,7 @@ export class VouchersService {
     };
   }
 
-  async applyVoucher(
-    code: string,
-    appointmentValue?: number,
-    userId?: string,
-  ) {
+  async applyVoucher(code: string, appointmentValue?: number, userId?: string) {
     const validation = await this.validateVoucher(code, userId);
     const voucher = validation.voucher;
 
@@ -93,7 +89,9 @@ export class VouchersService {
     }
 
     if (voucher.type === 'CASHBACK') {
-      const cashback = appointmentValue ? (appointmentValue * voucher.value) / 100 : 0;
+      const cashback = appointmentValue
+        ? (appointmentValue * voucher.value) / 100
+        : 0;
       return {
         discount: 0, // Cashback doesn't reduce current appointment
         cashbackAmount: parseFloat(cashback.toFixed(2)),
@@ -108,7 +106,11 @@ export class VouchersService {
 
   async createVoucher(data: {
     code: string;
-    type: 'FREE_SERVICE' | 'DISCOUNT_PERCENTAGE' | 'DISCOUNT_FIXED' | 'CASHBACK';
+    type:
+      | 'FREE_SERVICE'
+      | 'DISCOUNT_PERCENTAGE'
+      | 'DISCOUNT_FIXED'
+      | 'CASHBACK';
     value: number;
     minServices?: number;
     expiresAt?: Date;

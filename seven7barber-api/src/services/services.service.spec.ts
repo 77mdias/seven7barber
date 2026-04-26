@@ -80,7 +80,9 @@ describe('ServicesService', () => {
       mockPrisma.service.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('C4 | RED | findOne_returns_service_when_exists | ✅ FAIL', async () => {

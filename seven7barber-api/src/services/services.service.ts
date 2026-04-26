@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateServiceDto, CreateServiceSchema } from './dto/create-service.dto';
-import { UpdateServiceDto, UpdateServiceSchema } from './dto/update-service.dto';
+import {
+  CreateServiceDto,
+  CreateServiceSchema,
+} from './dto/create-service.dto';
+import {
+  UpdateServiceDto,
+  UpdateServiceSchema,
+} from './dto/update-service.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -38,7 +44,9 @@ export class ServicesService {
       where: { id },
       data: {
         ...parsed,
-        ...(parsed.price !== undefined && { price: parsed.price as unknown as Prisma.Decimal }),
+        ...(parsed.price !== undefined && {
+          price: parsed.price,
+        }),
       },
     });
   }
