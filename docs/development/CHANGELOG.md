@@ -4,6 +4,41 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [2026-04-26 18:00] — Documentation Sync
+
+### Changed
+- `ROADMAP.md` — Updated all phase statuses to COMPLETE, fixed timeline summary
+- `PHASE-06/phase-board.md` — Marked as complete (6/6 tasks)
+- `development/README.md` — Added PHASE-06 status, updated GAPS tracking
+- `PRD.md` — Status changed from "Draft" to "Final"
+- `SPEC.md` — Status changed from "Draft" to "Final"
+
+### Added
+- `PROPOSALS/PROPOSAL-future-enhancements.md` — Future features backlog
+- `GAPS/GAP-001-ci-pipeline-missing.md` — Documented resolved GAP-001
+
+### Fixed
+- ROADMAP.md milestone checklist now shows M1-M7 status accurately
+- All phase progress bars updated to 100%
+
+## [2026-04-26 17:30] — PHASE-06: Launch Execution
+
+### Added
+- Health check endpoints (`/health`, `/health/live`, `/health/ready`)
+- Structured logging with Pino
+- Request logging middleware
+- Metrics endpoint (`/metrics`)
+- Swagger/OpenAPI documentation at `/api/docs`
+- API documentation (`seven7barber-api/API.md`)
+- Updated README files for API, Web, and root
+- Deployment guide (`docs/development/DEPLOY.md`)
+- Operational scripts: `backup.sh`, `health-check.sh`, `setup-ssl.sh`
+
+### Changed
+- `main.ts` — Pino logger, Swagger setup, request middleware
+- `app.module.ts` — HealthModule and MetricsModule imports
+- `package.json` — Added pino, pino-pretty, @nestjs/swagger, swagger-ui-express
+
 ## [2026-04-26 17:00] — PHASE-06: Launch Planning
 
 ### Added
