@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./seven7barber-api
+      dockerfile: Dockerfile
+    image: seven7barber-api:latest
+    container_name: seven7barber-api
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - seven7barber-network
+
+  web:
+    build:
+      context: ./seven7barber-web
+      dockerfile: Dockerfile
+    image: seven7barber-web:latest
+    container_name: seven7barber-web
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_CLOUDINARY_CLOUD: ${NEXT_PUBLIC_CLOUDINARY_CLOUD}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - seven7barber-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: seven7barber-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/ssl/certs:ro
+    depends_on:
+      - web
+      - api
+    networks:
+      - seven7barber-network
+
+networks:
+  seven7barber-network:
+    driver: bridge
