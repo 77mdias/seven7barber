@@ -6,18 +6,32 @@ import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
+import { RolesGuard } from './roles.guard';
+import { ThrottlerModule } from '@nestjs/throttler';
+
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'fallback_secret_key_for_development',
+      secret: jwtSecret,
       signOptions: { expiresIn: '1d' },
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'auth',
+        ttl: 60000, // 1 minute in milliseconds
+        limit: 5,   // 5 attempts per minute
+      },
+    ]),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RolesGuard],
   controllers: [AuthController, BetterAuthController],
-  exports: [AuthService],
+  exports: [AuthService, RolesGuard, ThrottlerModule],
 })
 export class AuthModule {}
