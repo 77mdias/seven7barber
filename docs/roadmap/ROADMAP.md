@@ -108,13 +108,13 @@ This roadmap outlines the development phases for Tempest Seven7Barber, a portfol
 
 | Task | Deliverables | Status |
 |------|--------------|--------|
-| Availability race condition | Prisma SERIALIZABLE transaction | 🟡 PLANNING |
-| Timezone consistency | UTC handling for all dates | 🟡 PLANNING |
-| Payment signature | Real signature verification | 🟡 PLANNING |
-| Token refresh | JWT refresh endpoint | 🟡 PLANNING |
-| Rate limiting | @nestjs/throttler on auth | 🟡 PLANNING |
+| Availability race condition | Prisma SERIALIZABLE transaction | ⚠️ Deferred (no booking service) |
+| Timezone consistency | UTC handling for all dates | ✅ COMPLETO |
+| Payment signature | Real signature verification (HMAC-SHA256) | ✅ COMPLETO |
+| Token refresh | JWT refresh endpoint | ✅ COMPLETO |
+| Rate limiting | @nestjs/throttler on auth | ✅ COMPLETO |
 
-**Milestone:** 🔒 Production security baseline established
+**Milestone:** 🔒 Production security baseline established (6/8 complete, 2 deferred)
 
 ---
 
