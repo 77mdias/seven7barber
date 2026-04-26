@@ -10,6 +10,11 @@ async function bootstrap() {
     logger: new LoggerServiceImpl(),
   });
 
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   // Swagger Documentation
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Seven7Barber API')
