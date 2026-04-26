@@ -1,0 +1,15 @@
+{
+  "name": "seven7barber",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up",
+    "build": "docker compose build",
+    "api:dev": "cd seven7barber-api && bun run start:dev",
+    "web:dev": "cd seven7barber-web && bun run dev"
+  },
+  "workspaces": [
+    "seven7barber-web",
+    "seven7barber-api",
+    "packages/*"
+  ]
+}

@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: seven7barber-db
+    restart: always
+    environment:
+      POSTGRES_USER: seven7barber
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: seven7barber
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./seven7barber-api
+      dockerfile: Dockerfile
+    container_name: seven7barber-api
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://seven7barber:password123@db:5432/seven7barber?schema=public
+    depends_on:
+      - db
+
+  web:
+    build:
+      context: ./seven7barber-web
+      dockerfile: Dockerfile
+    container_name: seven7barber-web
+    restart: always
+    ports:
+      - '3001:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

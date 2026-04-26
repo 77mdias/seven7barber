@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System v2.0 - BnB Tournament</title>
+    <script src="assets/iconify-icon_e19829e7f0e8.js"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="assets/css2_adf3bf67eea9.css" rel="stylesheet"/>
+    <style>
+        :root {
+            --p5-red: #D92323;
+            --p5-black: #1a1a1a;
+            --p5-grey: #2F2F2F;
+        }
+        body {
+            font-family: 'Oswald', sans-serif;
+            background-color: #202020;
+            overflow-x: hidden;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .font-marker { font-family: 'Permanent Marker', cursive; }
+        .font-anton { font-family: 'Anton', sans-serif; }
+
+        /* Clip Paths */
+        .clip-jagged { clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 98%); }
+        .clip-slant-right { clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%); }
+        .clip-slant-left { clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%); }
+        .clip-starburst { clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%); }
+
+        /* Backgrounds */
+        .bg-halftone {
+            background-image: radial-gradient(#202020 20%, transparent 20%), radial-gradient(#202020 20%, transparent 20%);
+            background-color: var(--p5-red);
+            background-position: 0 0, 5px 5px;
+            background-size: 10px 10px;
+        }
+        .bg-halftone-white {
+            background-image: radial-gradient(#e5e5e5 20%, transparent 20%), radial-gradient(#e5e5e5 20%, transparent 20%);
+            background-color: #ffffff;
+            background-position: 0 0, 5px 5px;
+            background-size: 10px 10px;
+        }
+
+        /* Animations */
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%) skewX(-10deg); opacity: 0; }
+            to { transform: translateX(0) skewX(-10deg); opacity: 1; }
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+            to { transform: translateX(0) skewX(-10deg); opacity: 1; }
+        }
+        @keyframes pulse-p5 {
+            0% { transform: scale(1) rotate(-3deg); }
+            50% { transform: scale(1.05) rotate(-3deg); }
+            100% { transform: scale(1) rotate(-3deg); }
+        }
+        .animate-enter-left { animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-enter-right { animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pulse-slow { animation: pulse-p5 3s infinite; }
+
+        /* Shadows */
+        .text-shadow-hard { text-shadow: 4px 4px 0px #000; }
+        .box-shadow-hard { box-shadow: 8px 8px 0px #000; }
+
+        /* Navigation */
+        .ds-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 50;
+            background: var(--p5-black);
+            border-bottom: 2px solid var(--p5-red);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ds-nav-logo {
+            font-family: 'Anton', sans-serif;
+            font-size: 20px;
+            color: white;
+        }
+        .ds-nav-logo span { color: var(--p5-red); }
+        .ds-nav-links {
+            display: flex;
+            gap: 24px;
+        }
+        .ds-nav-links a {
+            color: var(--p5-red);
+            text-decoration: none;
+            font-size: 14px;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .ds-nav-links a:hover { color: white; }
+
+        /* Sections */
+        .ds-section {
+            padding: 80px 32px;
+            border-bottom: 1px solid var(--p5-grey);
+        }
+        .ds-section-title {
+            font-family: 'Anton', sans-serif;
+            font-size: 48px;
+            color: var(--p5-red);
+            margin-bottom: 48px;
+            text-transform: uppercase;
+        }
+
+        /* Hero Clone */
+        .hero-clone {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-top: 80px;
+        }
+        .hero-bg-halftone {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 75%;
+            height: 100%;
+            background-image: radial-gradient(#202020 20%, transparent 20%), radial-gradient(#202020 20%, transparent 20%);
+            background-color: var(--p5-red);
+            background-position: 0 0, 5px 5px;
+            background-size: 10px 10px;
+            transform: skewX(-12deg) translateX(25%);
+            z-index: 0;
+            border-left: 4px solid black;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+            max-width: 1200px;
+            width: 100%;
+            padding: 0 32px;
+        }
+        .hero-left { animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .hero-right { animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        .hero-date-tag {
+            background: var(--p5-black);
+            color: white;
+            padding: 8px 16px;
+            display: inline-block;
+            font-family: 'Anton', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            transform: skewX(-12deg);
+        }
+        .hero-title {
+            font-family: 'Anton', sans-serif;
+            font-size: 72px;
+            line-height: 1;
+            text-transform: uppercase;
+            transform: skewY(-3deg);
+        }
+        .hero-title span { display: block; }
+        .hero-title .text-black { background: white; color: black; padding: 0 8px; display: inline; }
+        .hero-title .text-red { color: var(--p5-red); }
+
+        .hero-subtitle {
+            font-family: 'Permanent Marker', cursive;
+            color: #9ca3af;
+            font-size: 20px;
+            transform: rotate(-2deg);
+        }
+
+        .hero-cta {
+            position: relative;
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .hero-cta-shadow {
+            position: absolute;
+            inset: 0;
+            background: var(--p5-black);
+            transform: translateX(8px) translateY(8px);
+            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
+            z-index: 0;
+        }
+        .hero-cta-btn {
+            position: relative;
+            background: var(--p5-red);
+            color: white;
+            padding: 20px 40px;
+            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
+            border: 2px solid black;
+            font-family: 'Anton', sans-serif;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.3s, color 0.3s;
+            z-index: 1;
+        }
+        .hero-cta-btn:hover { background: white; color: black; }
+
+        .hero-visual {
+            width: 384px;
+            height: 384px;
+            background: white;
+            border: 4px solid black;
+            transform: rotate(3deg);
+            box-shadow: 8px 8px 0px #000;
+            padding: 8px;
+            position: relative;
+        }
+        .hero-visual-inner {
+            width: 100%;
+            height: 100%;
+            background: var(--p5-red);
+            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
+            position: relative;
+        }
+
+        /* Typography Section */
+        .typo-table {
+            width: 100%;
+            max-width: 800px;
+        }
+        .typo-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--p5-grey);
+        }
+        .typo-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            min-width: 120px;
+        }
+        .typo-preview {
+            flex: 1;
+            text-align: left;
+        }
+        .typo-meta {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Colors Section */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 32px;
+        }
+        .color-card {
+            background: var(--p5-grey);
+            padding: 24px;
+            border: 2px solid black;
+        }
+        .color-swatch {
+            width: 100%;
+            height: 80px;
+            margin-bottom: 16px;
+            border: 2px solid black;
+        }
+        .color-name {
+            font-family: 'Anton', sans-serif;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .color-value {
+            font-family: monospace;
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        /* Buttons Section */
+        .btn-showcase {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            margin-top: 24px;
+        }
+        .btn-example {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        /* Style Classes from Original */
+        .bg-black { background-color: #000; }
+        .bg-red-600 { background-color: var(--p5-red); }
+        .bg-white { background-color: #fff; }
+        .text-white { color: #fff; }
+        .text-black { color: #000; }
+        .text-red-600 { color: var(--p5-red); }
+        .border-2 { border-width: 2px; }
+        .border-black { border-color: #000; }
+        .border-white { border-color: #fff; }
+        .px-6 { padding-left: 24px; padding-right: 24px; }
+        .py-2 { padding-top: 8px; padding-bottom: 8px; }
+        .px-10 { padding-left: 40px; padding-right: 40px; }
+        .py-5 { padding-top: 20px; padding-bottom: 20px; }
+        .transform { transform: translateZ(0); }
+        .-skew-x-12 { transform: skewX(-12deg); }
+        .skew-x-12 { transform: skewX(12deg); }
+        .transition-all { transition: all 0.3s; }
+        .duration-300 { transition-duration: 300ms; }
+        .group:hover .group-hover\:bg-red-600 { background-color: var(--p5-red); }
+        .group:hover .group-hover\:text-white { color: white; }
+        .group:hover .group-hover\:translate-y-1 { transform: translateY(4px); }
+        .group-hover\:bg-white:hover { background-color: white; }
+        .group-hover\:text-black:hover { color: black; }
+
+        /* Card Styles */
+        .card-base {
+            background: var(--p5-grey);
+            border: 2px solid black;
+            padding: 24px;
+        }
+        .card-title {
+            font-family: 'Anton', sans-serif;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        /* Social Icons */
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .social-icon:hover {
+            background: var(--p5-red);
+            color: white;
+            border-color: white;
+            transform: rotate(-12deg);
+        }
+
+        /* Input Styles */
+        .input-base {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid white;
+            padding: 12px 0;
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-base:focus {
+            border-color: var(--p5-red);
+        }
+
+        /* Grid System */
+        .container { max-width: 1200px; margin: 0 auto; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--p5-black); }
+        ::-webkit-scrollbar-thumb { background: var(--p5-red); }
+
+        ::selection { background: var(--p5-red); color: white; }
+    </style>
+</head>
+<body class="antialiased text-white">
+
+    <!-- Design System Navigation -->
+    <nav class="ds-nav">
+        <div class="ds-nav-logo">
+            <span>B</span>n<span style="color:#666">b</span> DESIGN SYSTEM
+        </div>
+        <div class="ds-nav-links">
+            <a href="#hero">Hero</a>
+            <a href="#typography">Typography</a>
+            <a href="#colors">Colors</a>
+            <a href="#components">Components</a>
+            <a href="#layout">Layout</a>
+            <a href="#motion">Motion</a>
+            <a href="#icons">Icons</a>
+        </div>
+    </nav>
+
+    <!-- 0) Hero Section - Exact Clone -->
+    <section id="hero" class="hero-clone" style="padding-top: 120px;">
+        <div class="hero-bg-halftone"></div>
+        <div class="hero-content">
+            <div class="hero-left">
+                <div class="hero-date-tag">DESIGN SYSTEM v2.0</div>
+                <h1 class="hero-title" style="margin: 24px 0;">
+                    <span>Design</span>
+                    <span class="text-black">Foundation</span>
+                    <span>& Components</span>
+                </h1>
+                <p class="hero-subtitle" style="margin: 32px 0;">
+                    The visual language of BnB Tournament
+                </p>
+                <button class="hero-cta">
+                    <div class="hero-cta-shadow"></div>
+                    <div class="hero-cta-btn">
+                        <span>Explore System</span>
+                        <iconify-icon icon="solar:arrow-right-linear" width="24"></iconify-icon>
+                    </div>
+                </button>
+            </div>
+            <div class="hero-right" style="display: flex; justify-content: center;">
+                <div class="hero-visual">
+                    <div class="hero-visual-inner" style="display: flex; align-items: center; justify-content: center;">
+                        <iconify-icon icon="solar:paint-brush-bold" width="120" style="color: white;"></iconify-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 1) Typography Section -->
+    <section id="typography" class="ds-section" style="background: var(--p5-black);">
+        <h2 class="ds-section-title">Typography</h2>
+
+        <div class="typo-table">
+            <!-- Heading 1 -->
+            <div class="typo-row">
+                <span class="typo-name">Heading 1</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Anton', sans-serif; font-size: 72px; line-height: 1; text-transform: uppercase; transform: skewY(-3deg); display: block;">
+                        TOURNAMENT
+                    </span>
+                </div>
+                <span class="typo-meta">72px / 72px</span>
+            </div>
+
+            <!-- Heading 2 -->
+            <div class="typo-row">
+                <span class="typo-name">Heading 2</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Anton', sans-serif; font-size: 48px; text-transform: uppercase;">
+                        Arena Ready
+                    </span>
+                </div>
+                <span class="typo-meta">48px / 48px</span>
+            </div>
+
+            <!-- Heading 3 -->
+            <div class="typo-row">
+                <span class="typo-name">Heading 3</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Anton', sans-serif; font-size: 32px; text-transform: uppercase;">
+                        Enter The Ring
+                    </span>
+                </div>
+                <span class="typo-meta">32px / 32px</span>
+            </div>
+
+            <!-- Heading 4 -->
+            <div class="typo-row">
+                <span class="typo-name">Heading 4</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Anton', sans-serif; font-size: 24px; text-transform: uppercase;">
+                        Next Match
+                    </span>
+                </div>
+                <span class="typo-meta">24px / 24px</span>
+            </div>
+
+            <!-- Bold L -->
+            <div class="typo-row">
+                <span class="typo-name">Bold L</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 20px;">
+                        COMPETE NOW
+                    </span>
+                </div>
+                <span class="typo-meta">20px / 28px</span>
+            </div>
+
+            <!-- Bold M -->
+            <div class="typo-row">
+                <span class="typo-name">Bold M</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 16px;">
+                        JOIN TOURNAMENT
+                    </span>
+                </div>
+                <span class="typo-meta">16px / 24px</span>
+            </div>
+
+            <!-- Bold S -->
+            <div class="typo-row">
+                <span class="typo-name">Bold S</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 14px;">
+                        REGISTER NOW
+                    </span>
+                </div>
+                <span class="typo-meta">14px / 20px</span>
+            </div>
+
+            <!-- Paragraph -->
+            <div class="typo-row">
+                <span class="typo-name">Paragraph</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Oswald', sans-serif; font-size: 18px; color: #d1d5db;">
+                        The tournament companion that steals the show. Organize, compete, and dominate the bracket.
+                    </span>
+                </div>
+                <span class="typo-meta">18px / 28px</span>
+            </div>
+
+            <!-- Marker L -->
+            <div class="typo-row">
+                <span class="typo-name">Marker L</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Permanent Marker', cursive; font-size: 24px; transform: rotate(-1deg);">
+                        Wake Up Get Up Fight Out
+                    </span>
+                </div>
+                <span class="typo-meta">24px / 32px</span>
+            </div>
+
+            <!-- Marker M -->
+            <div class="typo-row">
+                <span class="typo-name">Marker M</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Permanent Marker', cursive; font-size: 18px; color: #9ca3af;">
+                        Phantom Thieves of Tournaments
+                    </span>
+                </div>
+                <span class="typo-meta">18px / 24px</span>
+            </div>
+
+            <!-- Marker S -->
+            <div class="typo-row">
+                <span class="typo-name">Marker S</span>
+                <div class="typo-preview">
+                    <span style="font-family: 'Permanent Marker', cursive; font-size: 14px;">
+                        Fight!
+                    </span>
+                </div>
+                <span class="typo-meta">14px / 18px</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2) Colors & Surfaces -->
+    <section id="colors" class="ds-section">
+        <h2 class="ds-section-title">Colors & Surfaces</h2>
+
+        <div class="color-grid">
+            <!-- Primary Red -->
+            <div class="color-card">
+                <div class="color-swatch" style="background: #D92323;"></div>
+                <div class="color-name">Primary Red</div>
+                <div class="color-value">#D92323</div>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">--p5-red</div>
+            </div>
+
+            <!-- Black -->
+            <div class="color-card">
+                <div class="color-swatch" style="background: #1a1a1a;"></div>
+                <div class="color-name">Black</div>
+                <div class="color-value">#1a1a1a</div>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">--p5-black</div>
+            </div>
+
+            <!-- Grey -->
+            <div class="color-card">
+                <div class="color-swatch" style="background: #2F2F2F;"></div>
+                <div class="color-name">Grey</div>
+                <div class="color-value">#2F2F2F</div>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">--p5-grey</div>
+            </div>
+
+            <!-- Page Background -->
+            <div class="color-card">
+                <div class="color-swatch" style="background: #202020;"></div>
+                <div class="color-name">Page Background</div>
+                <div class="color-value">#202020</div>
+            </div>
+
+            <!-- White -->
+            <div class="color-card">
+                <div class="color-swatch" style="background: #ffffff;"></div>
+                <div class="color-name">White</div>
+                <div class="color-value">#ffffff</div>
+            </div>
+
+            <!-- Gray 400 -->
+            <div class="color-card">
+                <div class="color-swatch" style="background: #9ca3af;"></div>
+                <div class="color-name">Gray 400</div>
+                <div class="color-value">#9ca3af</div>
+            </div>
+        </div>
+
+        <!-- Halftone Patterns -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 24px; margin: 48px 0 24px; color: white;">Halftone Patterns</h3>
+        <div class="grid-2" style="max-width: 600px;">
+            <div style="height: 120px; background-image: radial-gradient(#202020 20%, transparent 20%), radial-gradient(#202020 20%, transparent 20%); background-color: #D92323; background-position: 0 0, 5px 5px; background-size: 10px 10px; border: 2px solid black;"></div>
+            <div style="height: 120px; background-image: radial-gradient(#e5e5e5 20%, transparent 20%), radial-gradient(#e5e5e5 20%, transparent 20%); background-color: #ffffff; background-position: 0 0, 5px 5px; background-size: 10px 10px; border: 2px solid black;"></div>
+        </div>
+    </section>
+
+    <!-- 3) UI Components -->
+    <section id="components" class="ds-section" style="background: var(--p5-black);">
+        <h2 class="ds-section-title">UI Components</h2>
+
+        <!-- Nav Buttons -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin-bottom: 24px;">Navigation Buttons</h3>
+        <div class="btn-showcase">
+            <div class="btn-example">
+                <a href="#" class="relative group" style="display: inline-block;">
+                    <div class="bg-white text-black px-6 py-2 transform -skew-x-12 border-2 border-black transition-all duration-300 group-hover:bg-red-600 group-hover:text-white group-hover:translate-y-1">
+                        <span class="font-bold tracking-tight text-lg transform skew-x-12 inline-block" style="font-family: 'Oswald', sans-serif;">TOURNAMENTS</span>
+                    </div>
+                </a>
+                <span class="btn-label">Default / Hover</span>
+            </div>
+
+            <div class="btn-example">
+                <a href="#" class="relative group" style="display: inline-block;">
+                    <div class="bg-black text-white px-6 py-2 transform -skew-x-12 border-2 border-white transition-all duration-300">
+                        <span class="font-bold tracking-tight text-lg transform skew-x-12 inline-block" style="font-family: 'Oswald', sans-serif;">LOGIN</span>
+                    </div>
+                </a>
+                <span class="btn-label">Dark Variant</span>
+            </div>
+        </div>
+
+        <!-- CTA Button -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">CTA Button</h3>
+        <div class="btn-showcase">
+            <div class="btn-example">
+                <button class="relative group bg-transparent border-none p-0 cursor-pointer">
+                    <div class="absolute inset-0 bg-black translate-x-2 translate-y-2 clip-slant-right"></div>
+                    <div class="relative bg-red-600 text-white px-10 py-5 clip-slant-right border-2 border-black group-hover:bg-white group-hover:text-black transition-colors">
+                        <span class="font-anton text-2xl tracking-wide uppercase flex items-center gap-2">
+                            Enter The Arena
+                            <iconify-icon icon="solar:arrow-right-linear" width="24"></iconify-icon>
+                        </span>
+                    </div>
+                </button>
+                <span class="btn-label">Primary CTA / Hover</span>
+            </div>
+        </div>
+
+        <!-- Social Icons -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">Social Icons</h3>
+        <div class="btn-showcase">
+            <div class="btn-example">
+                <div style="display: flex; gap: 16px;">
+                    <a class="w-10 h-10 bg-white text-black flex items-center justify-center border-2 border-transparent hover:bg-red-600 hover:text-white hover:border-white transition-colors transform hover:-rotate-12" href="#">
+                        <iconify-icon icon="solar:brand-twitter-linear" width="20"></iconify-icon>
+                    </a>
+                    <a class="w-10 h-10 bg-white text-black flex items-center justify-center border-2 border-transparent hover:bg-red-600 hover:text-white hover:border-white transition-colors transform hover:rotate-12" href="#">
+                        <iconify-icon icon="solar:brand-instagram-linear" width="20"></iconify-icon>
+                    </a>
+                    <a class="w-10 h-10 bg-white text-black flex items-center justify-center border-2 border-transparent hover:bg-red-600 hover:text-white hover:border-white transition-colors transform hover:-rotate-12" href="#">
+                        <iconify-icon icon="solar:brand-discord-linear" width="20"></iconify-icon>
+                    </a>
+                </div>
+                <span class="btn-label">Default / Hover</span>
+            </div>
+        </div>
+
+        <!-- Logo Block -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">Logo Block</h3>
+        <div class="btn-showcase">
+            <div class="btn-example">
+                <div class="transform -rotate-2 origin-top-left group" style="display: inline-block;">
+                    <div class="bg-black text-white p-4 clip-jagged border-2 border-white relative z-10 transition-transform duration-200 group-hover:scale-110">
+                        <h1 class="font-anton text-4xl tracking-tighter uppercase leading-none">
+                            <span class="text-red-600">B</span>n<span class="text-gray-400">b</span>
+                        </h1>
+                    </div>
+                    <div class="absolute inset-0 bg-red-600 clip-jagged transform translate-x-2 translate-y-2 -z-0"></div>
+                </div>
+                <span class="btn-label">Logo / Hover Scale</span>
+            </div>
+        </div>
+
+        <!-- Inputs -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">Input Field</h3>
+        <div class="btn-showcase" style="max-width: 400px;">
+            <div class="btn-example" style="width: 100%;">
+                <form class="flex relative group w-full">
+                    <input class="bg-transparent border-b-2 border-white text-white px-4 py-3 w-full focus:border-red-600 outline-none transition-colors" type="email" placeholder="Enter your email">
+                </form>
+                <span class="btn-label">Focus State (border changes to red)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4) Layout & Spacing -->
+    <section id="layout" class="ds-section">
+        <h2 class="ds-section-title">Layout & Spacing</h2>
+
+        <!-- Container -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin-bottom: 24px;">Container (max-width: 1200px)</h3>
+        <div style="max-width: 1200px; margin: 0 auto; background: var(--p5-grey); padding: 24px; border: 2px dashed #666;">
+            <span style="font-family: monospace; color: #666;">1200px max-width, centered, with 24px padding</span>
+        </div>
+
+        <!-- Grid 2 Columns -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">2-Column Grid</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 800px;">
+            <div style="background: var(--p5-red); padding: 32px; border: 2px solid black; text-align: center;">
+                <span style="font-family: 'Anton', sans-serif;">Column 1</span>
+            </div>
+            <div style="background: var(--p5-black); padding: 32px; border: 2px solid white; text-align: center;">
+                <span style="font-family: 'Anton', sans-serif;">Column 2</span>
+            </div>
+        </div>
+
+        <!-- Skew Utilities -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">Skew Transforms</h3>
+        <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+            <div class="bg-red-600 text-white px-6 py-4 -skew-x-12" style="display: inline-block;">
+                <span class="font-anton">SKEW -12deg</span>
+            </div>
+            <div class="bg-white text-black px-6 py-4 skew-x-12" style="display: inline-block;">
+                <span class="font-anton" style="transform: skewX(12deg); display: inline-block;">SKEW +12deg</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5) Motion & Interaction -->
+    <section id="motion" class="ds-section" style="background: var(--p5-black);">
+        <h2 class="ds-section-title">Motion & Interaction</h2>
+
+        <!-- Entrance Animations -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin-bottom: 24px;">Entrance Animations</h3>
+        <div style="display: flex; gap: 48px; flex-wrap: wrap;">
+            <div style="text-align: center;">
+                <div style="width: 100px; height: 100px; background: var(--p5-red); animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;"></div>
+                <span class="btn-label" style="margin-top: 16px; display: block;">slideInLeft</span>
+            </div>
+            <div style="text-align: center;">
+                <div style="width: 100px; height: 100px; background: var(--p5-red); animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;"></div>
+                <span class="btn-label" style="margin-top: 16px; display: block;">slideInRight</span>
+            </div>
+            <div style="text-align: center;">
+                <div style="width: 100px; height: 100px; background: var(--p5-red); animation: pulse-p5 3s infinite;"></div>
+                <span class="btn-label" style="margin-top: 16px; display: block;">pulse-p5 (3s loop)</span>
+            </div>
+        </div>
+
+        <!-- Keyframes Reference -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">Keyframes</h3>
+        <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; font-family: monospace; font-size: 12px; max-width: 800px; overflow-x: auto;">
+            <pre style="margin: 0; white-space: pre-wrap; color: #d1d5db;">
+@keyframes slideInLeft {
+    from { transform: translateX(-100%) skewX(-10deg); opacity: 0; }
+    to { transform: translateX(0) skewX(-10deg); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+    to { transform: translateX(0) skewX(-10deg); opacity: 1; }
+}
+
+@keyframes pulse-p5 {
+    0% { transform: scale(1) rotate(-3deg); }
+    50% { transform: scale(1.05) rotate(-3deg); }
+    100% { transform: scale(1) rotate(-3deg); }
+}
+
+.animate-enter-left { animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-enter-right { animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-pulse-slow { animation: pulse-p5 3s infinite; }</pre>
+        </div>
+    </section>
+
+    <!-- 6) Icons -->
+    <section id="icons" class="ds-section">
+        <h2 class="ds-section-title">Icons</h2>
+
+        <p style="font-family: 'Oswald', sans-serif; color: #9ca3af; margin-bottom: 32px;">
+            Icon System: Iconify (Solar Pack) - Used with <code style="background: var(--p5-grey); padding: 2px 8px;">&lt;iconify-icon&gt;</code>
+        </p>
+
+        <!-- Icon Sizes -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin-bottom: 24px;">Size Variants</h3>
+        <div style="display: flex; align-items: center; gap: 32px; flex-wrap: wrap;">
+            <iconify-icon icon="solar:arrow-right-linear" width="16" style="color: white;"></iconify-icon>
+            <iconify-icon icon="solar:arrow-right-linear" width="24" style="color: white;"></iconify-icon>
+            <iconify-icon icon="solar:arrow-right-linear" width="32" style="color: white;"></iconify-icon>
+            <iconify-icon icon="solar:arrow-right-linear" width="48" style="color: white;"></iconify-icon>
+            <iconify-icon icon="solar:arrow-right-linear" width="64" style="color: white;"></iconify-icon>
+        </div>
+        <span class="btn-label">16 / 24 / 32 / 48 / 64px</span>
+
+        <!-- Icon Samples -->
+        <h3 style="font-family: 'Anton', sans-serif; font-size: 20px; color: #9ca3af; margin: 48px 0 24px;">Icon Samples</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px;">
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:arrow-right-linear" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">arrow-right-linear</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:hamburger-menu-linear" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">hamburger-menu</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:star-fall-bold" width="32" style="color: #fbbf24;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">star-fall-bold</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:brand-twitter-linear" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">brand-twitter</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:brand-instagram-linear" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">brand-instagram</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:brand-discord-linear" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">brand-discord</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:paint-brush-bold" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">paint-brush-bold</div>
+            </div>
+            <div style="background: var(--p5-grey); padding: 24px; border: 2px solid black; text-align: center;">
+                <iconify-icon icon="solar:mailbox-linear" width="32" style="color: white;"></iconify-icon>
+                <div style="font-size: 12px; color: #666; margin-top: 8px;">mailbox-linear</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: var(--p5-black); padding: 48px 32px; border-top: 4px solid var(--p5-red);">
+        <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
+            <span style="font-family: 'Anton', sans-serif; font-size: 24px; color: var(--p5-red);">BnB</span>
+            <span style="font-family: 'Oswald', sans-serif; color: #666; display: block; margin-top: 16px;">
+                Design System v2.0 - Persona 5 Inspired Aesthetic
+            </span>
+        </div>
+    </footer>
+
+</body>
+</html>
