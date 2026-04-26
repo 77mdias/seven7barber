@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import * as crypto from 'crypto';
 
 export enum PaymentMethod {
   PIX = 'PIX',
@@ -42,7 +47,9 @@ const mockSessions = new Map<string, any>();
 export class PaymentsService {
   private sessions = mockSessions;
 
-  async createPaymentSession(dto: CreatePaymentSessionDto): Promise<PaymentSessionResult> {
+  async createPaymentSession(
+    dto: CreatePaymentSessionDto,
+  ): Promise<PaymentSessionResult> {
     if (!dto.appointmentId || dto.appointmentId === 'invalid-id') {
       throw new BadRequestException('Appointment not found');
     }
@@ -78,15 +85,26 @@ export class PaymentsService {
     return result;
   }
 
-  async processPaymentCallback(dto: PaymentCallbackDto): Promise<{ sessionId: string; status: PaymentStatus }> {
+  async processPaymentCallback(
+    dto: PaymentCallbackDto,
+  ): Promise<{ sessionId: string; status: PaymentStatus }> {
     const session = this.sessions.get(dto.sessionId);
 
     if (!session) {
       throw new NotFoundException('Payment session not found');
     }
 
-    const validSignature = 'valid-signature';
-    if (dto.signature !== validSignature) {
+    const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      throw new BadRequestException('Payment webhook secret not configured');
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(JSON.stringify({ sessionId: dto.sessionId, status: dto.status }))
+      .digest('hex');
+
+    if (dto.signature !== expectedSignature) {
       throw new BadRequestException('Invalid signature');
     }
 
