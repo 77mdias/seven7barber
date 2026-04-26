@@ -36,8 +36,8 @@ cp .env.example .env
 
 # Edit .env with your values (minimal setup for dev):
 cat > .env << 'EOF'
-# Database
-DATABASE_URL="postgresql://seven7barber:seven7barber_dev@localhost:5432/seven7barber"
+# Database (match docker-compose.yml credentials)
+DATABASE_URL="postgresql://seven7barber:password123@localhost:5432/seven7barber"
 
 # JWT (generate a random string)
 JWT_SECRET="your-super-secret-jwt-key-change-in-production"
@@ -57,7 +57,7 @@ EOF
 
 ```bash
 # Start PostgreSQL with Docker
-docker compose up -d postgres
+docker compose up -d db
 
 # Wait for PostgreSQL to be ready (5 seconds)
 sleep 5
@@ -282,13 +282,13 @@ seven7barber/
 
 ```bash
 # Check if PostgreSQL is running
-docker ps | grep postgres
+docker ps | grep seven7barber-db
 
 # Restart PostgreSQL
-docker compose restart postgres
+docker compose restart db
 
 # Check logs
-docker compose logs postgres
+docker compose logs db
 
 # Verify DATABASE_URL in .env
 cat .env | grep DATABASE_URL
