@@ -27,7 +27,10 @@ describe('AvailabilityService', () => {
         where: { id: { in: serviceIds } },
       });
 
-      const totalDuration = services.reduce((sum: number, s: any) => sum + s.duration, 0);
+      const totalDuration = services.reduce(
+        (sum: number, s: any) => sum + s.duration,
+        0,
+      );
       const workingHours = this.getWorkingHours();
 
       const startOfDay = new Date(`${dateStr}T00:00:00`);
@@ -50,17 +53,24 @@ describe('AvailabilityService', () => {
       const endMinutes = endHour * 60 + endMin;
 
       for (const barber of barbers) {
-        const barberAppointments = existingAppointments.filter((a: any) => a.barberId === barber.id);
+        const barberAppointments = existingAppointments.filter(
+          (a: any) => a.barberId === barber.id,
+        );
 
-        for (let mins = startMinutes; mins + totalDuration + workingHours.bufferMinutes <= endMinutes; mins += slotInterval) {
+        for (
+          let mins = startMinutes;
+          mins + totalDuration + workingHours.bufferMinutes <= endMinutes;
+          mins += slotInterval
+        ) {
           const slotTime = `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 
           const hasConflict = barberAppointments.some((appt: any) => {
             const apptTime = appt.dateTime;
-            const apptMins = apptTime.getHours() * 60 + apptTime.getMinutes();
-            const apptEndMins = apptMins + appt.service.duration + workingHours.bufferMinutes;
+            const apptMins = apptTime.getUTCHours() * 60 + apptTime.getUTCMinutes();
+            const apptEndMins =
+              apptMins + appt.service.duration + workingHours.bufferMinutes;
 
-            return (mins < apptEndMins && mins + totalDuration > apptMins);
+            return mins < apptEndMins && mins + totalDuration > apptMins;
           });
 
           if (!hasConflict) {
@@ -125,8 +135,8 @@ describe('AvailabilityService', () => {
 
     it('should exclude slots when barber has existing appointments', async () => {
       const mockDateTime = new Date('2026-04-27T10:00:00');
-      mockDateTime.getHours = () => 10;
-      mockDateTime.getMinutes = () => 0;
+      mockDateTime.getUTCHours = () => 10;
+      mockDateTime.getUTCMinutes = () => 0;
 
       mockPrisma.appointment.findMany.mockResolvedValue([
         {
@@ -139,7 +149,7 @@ describe('AvailabilityService', () => {
 
       const slots = await service.getAvailableSlots(date, serviceIds);
       const tenOClockSlots = slots.filter(
-        (s: any) => s.time === '10:00' && s.barberId === 'barber-1'
+        (s: any) => s.time === '10:00' && s.barberId === 'barber-1',
       );
 
       expect(tenOClockSlots.length).toBe(0);
