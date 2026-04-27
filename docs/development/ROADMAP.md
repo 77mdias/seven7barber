@@ -1,7 +1,7 @@
 # Project Roadmap — Seven7Barber
 
-**Versão:** 1.1
-**Data:** 2026-04-26
+**Versão:** 1.2
+**Data:** 2026-04-27
 
 ## 🎯 Visão Geral
 Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
@@ -41,14 +41,27 @@ Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
 - [x] TASK-023: SEO & Accessibility ✅
 - [x] TASK-024: Final Deploy Configuration ✅
 
-### PHASE-06: Launch 🟡 (PLANNING)
+### PHASE-06: Launch ✅ (COMPLETO)
 - [x] PHASE-06 Planning (06a-PLAN.md created)
-- [ ] Production health check endpoints (TASK-BUILD)
-- [ ] Monitoring & observability setup (TASK-BUILD)
-- [ ] SSL/TLS configuration (TASK-BUILD)
-- [ ] API documentation — OpenAPI/Swagger (TASK-BUILD)
-- [ ] README & getting started guides (TASK-BUILD)
-- [ ] Deployment runbook & rollback procedures (TASK-BUILD)
+- [x] Production health check endpoints ✅
+- [x] Monitoring & observability setup ✅
+- [x] SSL/TLS configuration ✅
+- [x] API documentation — OpenAPI/Swagger ✅
+- [x] README & getting started guides ✅
+- [x] Deployment runbook & rollback procedures ✅
+
+### PHASE-08: Code Quality & Polish ✅ (COMPLETO)
+- [x] Admin error handling (NestJS exceptions)
+- [x] Admin input validation (date filters, pagination)
+- [x] Remove double Zod validation
+- [x] Barbers data leak fix (exclude password hash)
+- [x] Error boundaries (error.tsx files)
+- [x] Non-functional UI fixes (cancel button, hero CTA)
+- [x] Case insensitive voucher lookup
+- [x] Removed noop provider wrapper
+
+### PHASE-09: Verificar escopo
+- [ ] A definir
 
 ## 📊 Progresso Global
 
@@ -59,9 +72,11 @@ Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
 | PHASE-03 | ✅ 100% | 6 | 6 |
 | PHASE-04 | ✅ 100% | 4 | 4 |
 | PHASE-05 | ✅ 100% | 4 | 4 |
-| PHASE-06 | 🟡 Planning | 6 | 0 |
+| PHASE-06 | ✅ 100% | 6 | 6 |
+| PHASE-07 | ✅ 100% | 8 | 8 |
+| PHASE-08 | ✅ 100% | 8 | 8 |
 
-**Progresso Estimado:** ~85% (PHASE-01 a 05 completos!)
+**Progresso Estimado:** ~95% (PHASE-01 a 08 completos!)
 
 ## 🔥 Gaps Abertos
 
@@ -71,8 +86,8 @@ Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
 
 ## 📅 Próximos Passos
 
-1. **PHASE-04**: Admin & Engagement — Admin dashboard, reviews, vouchers, metrics
-2. **PHASE-05**: Integrations & Polish — Payment, email, SEO, deploy
+1. **PHASE-09**: Definir escopo e executar
+2. **Revisão final**: Verificar todos os CRITICAL/HIGH do REVIEW.md
 
 ---
 *Last updated: 2026-04-26*
