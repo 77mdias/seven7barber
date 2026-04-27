@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { signUp } from "@/server/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,26 +13,20 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/sign-up/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error("Erro ao registrar. O email pode já estar em uso.");
-      }
-
+      await signUp(email, password, name);
       router.push("/login");
     } catch (err: any) {
       setError(err.message || "Erro desconhecido");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,8 +48,8 @@ export default function RegisterPage() {
             <Label htmlFor="password">Senha</Label>
             <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required className="border-2 border-[#111] focus-visible:ring-[#732F3B]" />
           </div>
-          <Button type="submit" className="w-full bg-[#111] hover:bg-[#732F3B] text-white font-heading uppercase tracking-wider text-lg py-6 border-2 border-[#111]">
-            Criar Conta
+          <Button type="submit" disabled={isLoading} className="w-full bg-[#111] hover:bg-[#732F3B] text-white font-heading uppercase tracking-wider text-lg py-6 border-2 border-[#111] disabled:opacity-50">
+            {isLoading ? "Criando conta..." : "Criar Conta"}
           </Button>
         </form>
         <div className="mt-6 text-center">

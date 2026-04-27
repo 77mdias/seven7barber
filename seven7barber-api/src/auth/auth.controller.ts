@@ -6,11 +6,13 @@ import {
   Get,
   UseGuards,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
+import { LoginDtoSchema, RegisterDtoSchema, RefreshTokenDtoSchema } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,10 +21,15 @@ export class AuthController {
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  async login(@Body() req: any) {
-    const user = await this.authService.validateUser(req.email, req.password);
+  async login(@Body() body: unknown) {
+    const parsed = LoginDtoSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.errors);
+    }
+    const { email, password } = parsed.data;
+    const user = await this.authService.validateUser(email, password);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Credenciais inválidas');
     }
     return this.authService.login(user);
   }
@@ -30,8 +37,12 @@ export class AuthController {
   @Post('register')
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  async register(@Body() req: any) {
-    return this.authService.register(req);
+  async register(@Body() body: unknown) {
+    const parsed = RegisterDtoSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.errors);
+    }
+    return this.authService.register(parsed.data);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -41,7 +52,11 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refreshTokens(@Body() body: { refreshToken?: string }) {
-    return this.authService.refreshTokens(body.refreshToken);
+  async refreshTokens(@Body() body: unknown) {
+    const parsed = RefreshTokenDtoSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.errors);
+    }
+    return this.authService.refreshTokens(parsed.data.refreshToken);
   }
 }

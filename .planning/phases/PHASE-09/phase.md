@@ -1,44 +1,55 @@
 ---
 phase: 9
-name: "Future Enhancements"
-slug: "future-enhancements"
-status: "planning"
-goal: "Implement requested features beyond the core booking system."
-description: "Implement proposed enhancements from PROPOSAL-future-enhancements.md including OAuth providers, push notifications, waiting list, and loyalty program."
+name: "Security Hardening II"
+slug: "security-hardening-ii"
+status: "in_progress"
+goal: "Resolve all remaining HIGH severity findings from REVIEW.md to achieve production-ready security posture."
+description: "Address remaining HIGH severity issues not covered by PHASE-07: auth DTOs, password policy, dual auth resolution, rate limiting verification, OAuth token encryption, reviews auth, web auth fixes, and payments persistence."
 depends_on: "08"
 requirements:
-  - "REQ-FUTURE-01: Real OAuth providers (GitHub, Google, Discord)"
-  - "REQ-FUTURE-02: Push notifications (Twilio SMS/WhatsApp)"
-  - "REQ-FUTURE-03: Waiting list / queue system"
-  - "REQ-FUTURE-04: Loyalty program with points"
-  - "REQ-FUTURE-05: Enhanced barber profiles with portfolios"
-  - "REQ-FUTURE-06: Multiple service booking (bundles)"
-created: "2026-04-26"
-last_updated: "2026-04-26"
+  - "REQ-HARD-01: Create strict DTOs for auth endpoints (H1)"
+  - "REQ-HARD-02: Strengthen password policy to 8+ chars with complexity (H2)"
+  - "REQ-HARD-03: Resolve dual auth system conflict - pick one strategy (H3)"
+  - "REQ-HARD-04: Verify rate limiting is properly configured (H4)"
+  - "REQ-HARD-05: Encrypt OAuth tokens at rest (H5/H17)"
+  - "REQ-HARD-06: Add authentication to reviews endpoint (H6)"
+  - "REQ-HARD-07: Validate auth responses in web (H11)"
+  - "REQ-HARD-08: Fix session hook to refetch after login (H12)"
+  - "REQ-HARD-09: Fix register page to use shared auth (H13)"
+  - "REQ-HARD-10: Move payments from global map to database (H16)"
+created: "2026-04-27"
+last_updated: "2026-04-27"
 ---
 
-# PHASE-09: Future Enhancements
+# PHASE-09: Security Hardening II
 
 **Status:** 🟡 PLANNING
-**Goal:** Implement requested features beyond core booking system
+**Goal:** Resolve all remaining HIGH severity findings from REVIEW.md
 
 ## 🎯 Objectives
 
-1. **Real OAuth** — Replace mock auth with real GitHub, Google, Discord
-2. **Push Notifications** — Twilio SMS/WhatsApp reminders
-3. **Waiting List** — Queue system for full slots
-4. **Loyalty Program** — Points, tiers, rewards
+1. **Auth DTOs** — Create strict input validation for login/register
+2. **Password Policy** — Strengthen to 8+ chars with complexity requirements
+3. **Dual Auth Resolution** — Pick one auth system, remove conflicts
+4. **OAuth Token Security** — Encrypt tokens at rest in database
+5. **Reviews Auth** — Ensure only authenticated users can submit reviews
+6. **Web Auth Fixes** — Validate responses, fix session, deduplicate code
+7. **Payments Persistence** — Move from in-memory to database
 
 ## 📋 Requirements
 
 | ID | Requirement | Status | Priority |
 |----|-------------|--------|----------|
-| REQ-FUTURE-01 | Real OAuth providers | ⏳ Pending | HIGH |
-| REQ-FUTURE-02 | Push notifications | ⏳ Pending | HIGH |
-| REQ-FUTURE-03 | Waiting list / queue | ⏳ Pending | MEDIUM |
-| REQ-FUTURE-04 | Loyalty program | ⏳ Pending | MEDIUM |
-| REQ-FUTURE-05 | Barber profiles | ⏳ Pending | LOW |
-| REQ-FUTURE-06 | Bundle bookings | ⏳ Pending | LOW |
+| REQ-HARD-01 | Auth DTOs | ✅ Done | HIGH |
+| REQ-HARD-02 | Password policy | ✅ Done | HIGH |
+| REQ-HARD-03 | Dual auth resolution | ⏳ Pending | HIGH |
+| REQ-HARD-04 | Rate limiting verification | ⏳ Pending | HIGH |
+| REQ-HARD-05 | OAuth token encryption | ⏳ Pending | HIGH |
+| REQ-HARD-06 | Reviews auth | ⏳ Pending | HIGH |
+| REQ-HARD-07 | Web auth response validation | ✅ Done | MEDIUM |
+| REQ-HARD-08 | Session hook refetch | ⏳ Pending | MEDIUM |
+| REQ-HARD-09 | Register page dedup | ✅ Done | MEDIUM |
+| REQ-HARD-10 | Payments persistence | ⏳ Pending | HIGH |
 
 ## 🔗 Dependencies
 
@@ -51,27 +62,27 @@ docs/development/PHASES/PHASE-09/
 ├── phase.md              # This file
 ├── phase-board.md        # Task board
 ├── SPECS/
-│   └── SPEC-future.md    # Future enhancements spec
+│   └── SPEC-hardening.md # Hardening specification
 └── plans/
-    └── 09a-PLAN.md       # Main future plan
+    └── 09a-PLAN.md      # Main hardening plan
 ```
 
 ## 🚀 Quick Links
 
-- [PROPOSAL-future-enhancements.md](../../PROPOSALS/PROPOSAL-future-enhancements.md)
-- [ROADMAP.md](../../../../ROADMAP.md)
+- [REVIEW.md](../../../REVIEW.md) — Source of security findings
+- [ROADMAP.md](../../../ROADMAP.md)
 - [PHASE-08 Board](../PHASE-08/phase-board.md)
+- [PHASE-07 Board](../PHASE-07/phase-board.md)
 
-## 💡 Feature Description
+## 🔒 Security Checklist
 
-### Real OAuth
-Replace mock authentication with real OAuth flows for GitHub, Google, and Discord. Store credentials in environment variables.
-
-### Push Notifications
-Integrate Twilio for SMS and WhatsApp notifications. Templates: reminder (24h before), confirmation, cancellation.
-
-### Waiting List
-When slot is full, offer to join waitlist. Cron job checks for cancellations and auto-books first in queue.
-
-### Loyalty Program
-`LoyaltyPoints` model per user. Earn 10 points per R$10 spent. Redeem for discounts or free services. Bronze/Silver/Gold tiers.
+- [ ] Strict Zod DTOs for all auth endpoints
+- [ ] Password policy: 8+ chars, uppercase, lowercase, number, special
+- [ ] Single auth system (remove auth-better or auth controller)
+- [ ] Rate limiting active on all auth endpoints
+- [ ] OAuth tokens encrypted with AES-256
+- [ ] Reviews require authenticated user
+- [ ] Auth response.ok checked in all fetch calls
+- [ ] Session refetches after login
+- [ ] Register uses shared signUp function
+- [ ] Payment sessions stored in database, not memory
