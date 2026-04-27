@@ -171,12 +171,39 @@ model UserPromotion {
   id          String    @id @default(uuid())
   usedAt      DateTime?
   createdAt   DateTime  @default(now())
-  
+
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-  
+
   promotionId String
   promotion   Promotion @relation(fields: [promotionId], references: [id])
-  
+
   @@unique([userId, promotionId])
+}
+
+enum PaymentMethod {
+  PIX
+  BOLETO
+  CREDIT_CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  FAILED
+  REFUNDED
+}
+
+model PaymentSession {
+  id            String        @id @default(uuid())
+  appointmentId String
+  status        PaymentStatus @default(PENDING)
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  qrCode        String?
+  receiptUrl    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([appointmentId])
 }

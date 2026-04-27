@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class ReviewsService {
     rating: number;
     feedback?: string;
     images?: string[];
-  }) {
+  }, userId: string) {
     if (data.rating < 1 || data.rating > 5) {
       throw new BadRequestException('Rating must be between 1 and 5');
     }
@@ -22,6 +22,11 @@ export class ReviewsService {
 
     if (!appointment) {
       throw new BadRequestException('Appointment not found');
+    }
+
+    // Verify the authenticated user owns this appointment
+    if (appointment.clientId !== userId) {
+      throw new ForbiddenException('You can only review your own appointments');
     }
 
     if (appointment.status !== 'COMPLETED') {

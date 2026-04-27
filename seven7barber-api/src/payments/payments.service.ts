@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
 
 export enum PaymentMethod {
@@ -40,12 +41,9 @@ export interface PaymentSessionResult {
   createdAt: Date;
 }
 
-// Mock storage for tests
-const mockSessions = new Map<string, any>();
-
 @Injectable()
 export class PaymentsService {
-  private sessions = mockSessions;
+  constructor(private readonly prisma: PrismaService) {}
 
   async createPaymentSession(
     dto: CreatePaymentSessionDto,
@@ -54,32 +52,37 @@ export class PaymentsService {
       throw new BadRequestException('Appointment not found');
     }
 
-    const sessionId = `session-${Date.now()}`;
-    const session = {
-      id: sessionId,
-      appointmentId: dto.appointmentId,
-      status: 'PENDING',
-      amount: dto.amount,
-      method: dto.method,
-      createdAt: new Date(),
-    };
-
-    this.sessions.set(sessionId, session);
+    const session = await this.prisma.paymentSession.create({
+      data: {
+        appointmentId: dto.appointmentId,
+        status: 'PENDING',
+        amount: dto.amount,
+        method: dto.method,
+      },
+    });
 
     const result: PaymentSessionResult = {
       sessionId: session.id,
       status: session.status as PaymentStatus,
-      amount: session.amount,
+      amount: Number(session.amount),
       method: session.method,
       createdAt: session.createdAt,
     };
 
-    if (dto.method === 'PIX') {
+    if (dto.method === PaymentMethod.PIX) {
       result.qrCode = `mock-pix-qr-${session.id}`;
+      await this.prisma.paymentSession.update({
+        where: { id: session.id },
+        data: { qrCode: result.qrCode },
+      });
     }
 
-    if (dto.method === 'BOLETO') {
+    if (dto.method === PaymentMethod.BOLETO) {
       result.receiptUrl = `http://mockboleto.com/${session.id}`;
+      await this.prisma.paymentSession.update({
+        where: { id: session.id },
+        data: { receiptUrl: result.receiptUrl },
+      });
     }
 
     return result;
@@ -88,7 +91,9 @@ export class PaymentsService {
   async processPaymentCallback(
     dto: PaymentCallbackDto,
   ): Promise<{ sessionId: string; status: PaymentStatus }> {
-    const session = this.sessions.get(dto.sessionId);
+    const session = await this.prisma.paymentSession.findUnique({
+      where: { id: dto.sessionId },
+    });
 
     if (!session) {
       throw new NotFoundException('Payment session not found');
@@ -108,17 +113,21 @@ export class PaymentsService {
       throw new BadRequestException('Invalid signature');
     }
 
-    session.status = dto.status;
-    this.sessions.set(dto.sessionId, session);
+    const updated = await this.prisma.paymentSession.update({
+      where: { id: dto.sessionId },
+      data: { status: dto.status as any },
+    });
 
     return {
-      sessionId: session.id,
-      status: session.status as PaymentStatus,
+      sessionId: updated.id,
+      status: updated.status as PaymentStatus,
     };
   }
 
   async getPaymentSession(sessionId: string) {
-    const session = this.sessions.get(sessionId);
+    const session = await this.prisma.paymentSession.findUnique({
+      where: { id: sessionId },
+    });
 
     if (!session) {
       throw new NotFoundException('Payment session not found');
@@ -127,7 +136,7 @@ export class PaymentsService {
     return {
       sessionId: session.id,
       status: session.status as PaymentStatus,
-      amount: session.amount,
+      amount: Number(session.amount),
       method: session.method,
       updatedAt: session.updatedAt,
     };

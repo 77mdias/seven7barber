@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
 
 function computeSignature(sessionId: string, status: string): string {
@@ -10,20 +11,43 @@ function computeSignature(sessionId: string, status: string): string {
     .digest('hex');
 }
 
+const mockSessions = new Map<string, any>();
+
+const mockPrismaService = {
+  paymentSession: {
+    create: jest.fn(({ data }) => {
+      const id = `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const session = { id, ...data, createdAt: new Date(), updatedAt: new Date() };
+      mockSessions.set(id, session);
+      return session;
+    }),
+    update: jest.fn(({ where, data }) => {
+      const existing = mockSessions.get(where.id) || {};
+      const updated = { ...existing, ...data, updatedAt: new Date() };
+      mockSessions.set(where.id, updated);
+      return updated;
+    }),
+    findUnique: jest.fn(({ where }) => {
+      return mockSessions.get(where.id) || null;
+    }),
+  },
+};
+
 describe('PaymentsService', () => {
   let service: PaymentsService;
 
   beforeEach(async () => {
+    mockSessions.clear();
+    jest.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PaymentsService],
+      providers: [
+        PaymentsService,
+        { provide: PrismaService, useValue: mockPrismaService },
+      ],
     }).compile();
 
     service = module.get<PaymentsService>(PaymentsService);
-  });
-
-  afterEach(() => {
-    // Clear mock storage between tests
-    // Note: In real implementation, this would clear the Map
   });
 
   describe('createPaymentSession', () => {

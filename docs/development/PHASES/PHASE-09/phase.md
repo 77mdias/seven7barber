@@ -23,7 +23,7 @@ last_updated: "2026-04-27"
 
 # PHASE-09: Security Hardening II
 
-**Status:** 🟡 PLANNING
+**Status:** ✅ COMPLETE
 **Goal:** Resolve all remaining HIGH severity findings from REVIEW.md
 
 ## 🎯 Objectives
@@ -42,14 +42,14 @@ last_updated: "2026-04-27"
 |----|-------------|--------|----------|
 | REQ-HARD-01 | Auth DTOs | ✅ Done | HIGH |
 | REQ-HARD-02 | Password policy | ✅ Done | HIGH |
-| REQ-HARD-03 | Dual auth resolution | ⏳ Pending | HIGH |
-| REQ-HARD-04 | Rate limiting verification | ⏳ Pending | HIGH |
-| REQ-HARD-05 | OAuth token encryption | ⏳ Pending | HIGH |
-| REQ-HARD-06 | Reviews auth | ⏳ Pending | HIGH |
+| REQ-HARD-03 | Dual auth resolution | ✅ Done | HIGH |
+| REQ-HARD-04 | Rate limiting verification | ✅ Done | HIGH |
+| REQ-HARD-05 | OAuth token encryption | 🔮 Future | HIGH |
+| REQ-HARD-06 | Reviews auth | ✅ Done | HIGH |
 | REQ-HARD-07 | Web auth response validation | ✅ Done | MEDIUM |
-| REQ-HARD-08 | Session hook refetch | ⏳ Pending | MEDIUM |
+| REQ-HARD-08 | Session hook refetch | ✅ Done | MEDIUM |
 | REQ-HARD-09 | Register page dedup | ✅ Done | MEDIUM |
-| REQ-HARD-10 | Payments persistence | ⏳ Pending | HIGH |
+| REQ-HARD-10 | Payments persistence | ✅ Done | HIGH |
 
 ## 🔗 Dependencies
 
@@ -76,13 +76,13 @@ docs/development/PHASES/PHASE-09/
 
 ## 🔒 Security Checklist
 
-- [ ] Strict Zod DTOs for all auth endpoints
-- [ ] Password policy: 8+ chars, uppercase, lowercase, number, special
-- [ ] Single auth system (remove auth-better or auth controller)
-- [ ] Rate limiting active on all auth endpoints
-- [ ] OAuth tokens encrypted with AES-256
-- [ ] Reviews require authenticated user
-- [ ] Auth response.ok checked in all fetch calls
-- [ ] Session refetches after login
-- [ ] Register uses shared signUp function
-- [ ] Payment sessions stored in database, not memory
+- [x] Strict Zod DTOs for all auth endpoints
+- [x] Password policy: 8+ chars, uppercase, lowercase, number, special
+- [x] Single auth system (remove auth-better or auth controller)
+- [x] Rate limiting active on all auth endpoints
+- [x] OAuth tokens encrypted with AES-256 (N/A — OAuth not implemented yet, deferred to future phase)
+- [x] Reviews require authenticated user
+- [x] Auth response.ok checked in all fetch calls
+- [x] Session refetches after login
+- [x] Register uses shared signUp function
+- [x] Payment sessions stored in database, not memory

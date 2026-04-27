@@ -18,7 +18,7 @@ export function useSession() {
 
   const fetchSession = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/auth/get-session`, {
+      const res = await fetch(`${API_URL}/auth/me`, {
         credentials: "include",
       });
       if (res.ok) {

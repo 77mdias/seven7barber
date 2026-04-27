@@ -24,7 +24,7 @@ export class AuthController {
   async login(@Body() body: unknown) {
     const parsed = LoginDtoSchema.safeParse(body);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.errors);
+      throw new BadRequestException(parsed.error.issues);
     }
     const { email, password } = parsed.data;
     const user = await this.authService.validateUser(email, password);
@@ -40,7 +40,7 @@ export class AuthController {
   async register(@Body() body: unknown) {
     const parsed = RegisterDtoSchema.safeParse(body);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.errors);
+      throw new BadRequestException(parsed.error.issues);
     }
     return this.authService.register(parsed.data);
   }
@@ -55,7 +55,7 @@ export class AuthController {
   async refreshTokens(@Body() body: unknown) {
     const parsed = RefreshTokenDtoSchema.safeParse(body);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.errors);
+      throw new BadRequestException(parsed.error.issues);
     }
     return this.authService.refreshTokens(parsed.data.refreshToken);
   }

@@ -6,7 +6,10 @@ import {
   Param,
   Query,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ReviewsService } from './reviews.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -17,6 +20,7 @@ export class ReviewsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async createReview(
+    @Req() req: Request,
     @Body()
     body: {
       appointmentId: string;
@@ -25,7 +29,11 @@ export class ReviewsController {
       images?: string[];
     },
   ) {
-    return this.reviewsService.createReview(body);
+    const userId = (req.user as any)?.id;
+    if (!userId) {
+      throw new ForbiddenException('User not found in token');
+    }
+    return this.reviewsService.createReview(body, userId);
   }
 
   @Get('barber/:barberId')

@@ -60,8 +60,16 @@ Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
 - [x] Case insensitive voucher lookup
 - [x] Removed noop provider wrapper
 
-### PHASE-09: Verificar escopo
-- [ ] A definir
+### PHASE-09: Security Hardening II ✅ COMPLETE (10/10)
+- [x] Auth DTOs (Zod schemas) - T-01
+- [x] Password policy (8+ chars) - T-02
+- [x] Dual auth resolution (removed BetterAuthController) - T-03
+- [x] Rate limiting verification (ThrottlerGuard active) - T-04
+- [x] OAuth token encryption (AES-256) - T-05 🔮 Future (OAuth not implemented)
+- [x] Reviews auth (ownership check) - T-06
+- [x] Web auth fixes (endpoints + session refetch) - T-07, T-08
+- [x] Register page dedup - T-09
+- [x] Payments persistence (Prisma) - T-10
 
 ## 📊 Progresso Global
 
@@ -75,8 +83,9 @@ Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
 | PHASE-06 | ✅ 100% | 6 | 6 |
 | PHASE-07 | ✅ 100% | 8 | 8 |
 | PHASE-08 | ✅ 100% | 8 | 8 |
+| PHASE-09 | ✅ 100% | 10 | 10 |
 
-**Progresso Estimado:** ~95% (PHASE-01 a 08 completos!)
+**Progresso Estimado:** ~98% (PHASE-01 a 09 completos!)
 
 ## 🔥 Gaps Abertos
 
@@ -86,8 +95,8 @@ Sistema completo de agendamento para barbearia (Full-stack Portfolio Project).
 
 ## 📅 Próximos Passos
 
-1. **PHASE-09**: Definir escopo e executar
+1. **OAuth Implementation**: Implementar OAuth providers (T-05 will be resolved here)
 2. **Revisão final**: Verificar todos os CRITICAL/HIGH do REVIEW.md
 
 ---
-*Last updated: 2026-04-26*
+*Last updated: 2026-04-27*

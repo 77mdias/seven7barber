@@ -1,9 +1,9 @@
 # PHASE-09: Security Hardening II — Task Board
 
 **Phase:** 09
-**Status:** 🟡 PLANNING
+**Status:** 🟡 IN PROGRESS
 **Total Tasks:** 10
-**Completed:** 0
+**Completed:** 9
 
 ---
 
@@ -13,26 +13,26 @@
 
 | # | Task | Priority | Status | Notes |
 |---|------|----------|--------|-------|
-| T-01 | Create strict DTOs for auth endpoints | HIGH | ⏳ Pending | H1 - Zod schemas for login/register |
-| T-02 | Strengthen password policy | HIGH | ⏳ Pending | H2 - 8+ chars, complexity requirements |
-| T-03 | Resolve dual auth system | HIGH | ⏳ Pending | H3 - Pick one auth controller |
-| T-04 | Verify rate limiting | HIGH | ⏳ Pending | H4 - Confirm @nestjs/throttler active |
-| T-05 | Encrypt OAuth tokens at rest | HIGH | ⏳ Pending | H5/H17 - AES-256 encryption |
-| T-06 | Add auth to reviews endpoint | HIGH | ⏳ Pending | H6 - Require authentication |
+| T-01 | Create strict DTOs for auth endpoints | HIGH | ✅ Done | H1 - Zod schemas for login/register |
+| T-02 | Strengthen password policy | HIGH | ✅ Done | H2 - 8+ chars, complexity requirements |
+| T-03 | Resolve dual auth system | HIGH | ✅ Done | H3 - Removed BetterAuthController |
+| T-04 | Verify rate limiting | HIGH | ✅ Done | H4 - ThrottlerGuard + @Throttle active |
+| T-05 | Encrypt OAuth tokens at rest | HIGH | 🔮 Future | H5/H17 - OAuth not implemented yet |
+| T-06 | Add auth to reviews endpoint | HIGH | ✅ Done | H6 - Ownership check + JwtAuthGuard |
 
 ### 🌐 Web Auth Fixes (MEDIUM)
 
 | # | Task | Priority | Status | Notes |
 |---|------|----------|--------|-------|
-| T-07 | Validate auth responses | MEDIUM | ⏳ Pending | H11 - Check response.ok |
-| T-08 | Fix session hook refetch | MEDIUM | ⏳ Pending | H12 - Update header after login |
-| T-09 | Fix register page auth | MEDIUM | ⏳ Pending | H13 - Use shared signUp |
+| T-07 | Validate auth responses | MEDIUM | ✅ Done | H11 - Fixed wrong API endpoints |
+| T-08 | Fix session hook refetch | MEDIUM | ✅ Done | H12 - useSession refetch called after login |
+| T-09 | Fix register page auth | MEDIUM | ✅ Done | H13 - Uses shared signUp (endpoint fixed) |
 
 ### 💳 Payments (HIGH)
 
 | # | Task | Priority | Status | Notes |
 |---|------|----------|--------|-------|
-| T-10 | Move payments from memory to DB | HIGH | ⏳ Pending | H16 - Replace global Map with Prisma |
+| T-10 | Move payments from memory to DB | HIGH | ✅ Done | H16 - PaymentSession model + Prisma |
 
 ---
 
@@ -68,13 +68,13 @@
 
 ## ✅ Completion Criteria
 
-- [ ] All auth endpoints have strict Zod DTOs
-- [ ] Passwords require 8+ chars with complexity
-- [ ] Single auth system operational
-- [ ] Rate limiting active on auth endpoints
+- [x] All auth endpoints have strict Zod DTOs
+- [x] Passwords require 8+ chars with complexity
+- [x] Single auth system operational
+- [x] Rate limiting active on auth endpoints
 - [ ] OAuth tokens encrypted at rest
-- [ ] Reviews require authentication
-- [ ] Web auth responses validated
-- [ ] Session refetches after login
-- [ ] Register uses shared auth
-- [ ] Payment sessions in database
+- [x] Reviews require authentication
+- [x] Web auth responses validated
+- [x] Session refetches after login
+- [x] Register uses shared auth
+- [x] Payment sessions in database

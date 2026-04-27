@@ -3,7 +3,7 @@
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export async function signIn(email: string, password: string) {
-  const response = await fetch(`${API_URL}/auth/sign-in/email`, {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -17,7 +17,7 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(email: string, password: string, name: string) {
-  const response = await fetch(`${API_URL}/auth/sign-up/email`, {
+  const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, name }),
@@ -31,8 +31,8 @@ export async function signUp(email: string, password: string, name: string) {
 }
 
 export async function signOut() {
-  const response = await fetch(`${API_URL}/auth/sign-out`, {
-    method: "POST",
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "DELETE",
     credentials: "include",
   });
   if (!response.ok) {
@@ -42,7 +42,7 @@ export async function signOut() {
 }
 
 export async function getSession() {
-  const response = await fetch(`${API_URL}/auth/get-session`, {
+  const response = await fetch(`${API_URL}/auth/me`, {
     credentials: "include",
   });
   if (!response.ok) {

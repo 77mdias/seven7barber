@@ -123,16 +123,34 @@ This roadmap outlines the development phases for Tempest Seven7Barber, a portfol
 
 | Task | Deliverables | Status |
 |------|--------------|--------|
-| Error handling | Proper NestJS exceptions | 🟡 PLANNING |
-| Data privacy | No password hash leaks | 🟡 PLANNING |
-| Error boundaries | React error.tsx files | 🟡 PLANNING |
-| UI completeness | All elements functional | 🟡 PLANNING |
+| Error handling | Proper NestJS exceptions | ✅ COMPLETO |
+| Data privacy | No password hash leaks | ✅ COMPLETO |
+| Error boundaries | React error.tsx files | ✅ COMPLETO |
+| UI completeness | All elements functional | ✅ COMPLETO |
 
 **Milestone:** 🏆 Production-quality codebase
 
 ---
 
-### Phase 9: Future Enhancements (Post-Launch)
+### Phase 9: Security Hardening II (Week 10-11)
+**Goal:** Resolve remaining HIGH severity findings from code review
+
+| Task | Deliverables | Status |
+|------|--------------|--------|
+| Auth DTOs | Strict Zod schemas for login/register | ✅ COMPLETO |
+| Password policy | 8+ chars with complexity requirements | ✅ COMPLETO |
+| Dual auth resolution | Single auth system (removed BetterAuthController) | ✅ COMPLETO |
+| Rate limiting | ThrottlerGuard + @Throttle active | ✅ COMPLETO |
+| Reviews auth | Ownership check + JwtAuthGuard | ✅ COMPLETO |
+| Web auth fixes | Fixed wrong endpoints, session refetch | ✅ COMPLETO |
+| Payments persistence | PaymentSession in Prisma (no more in-memory Map) | ✅ COMPLETO |
+| OAuth encryption | AES-256 token encryption | 🔮 Future (OAuth not implemented) |
+
+**Milestone:** 🔒 Production security baseline (8/9 complete, 1 deferred to future)
+
+---
+
+### Phase 10: Future Enhancements (Post-Launch)
 **Goal:** Additional features for production
 
 | Task | Deliverables | Status |
@@ -157,12 +175,13 @@ Week 3-5:   Booking    ███████████████████
 Week 5-6:   Reviews    ████████████████████ 100%
 Week 6-7:   Admin      ████████████████████ 100%
 Week 7-8:   Launch     ████████████████████ 100%
-Week 8-9:   Security   ░░░░░░░░░░░░░░░░░░░░░ (planning)
-Week 9-10:  Quality    ░░░░░░░░░░░░░░░░░░░░░ (planning)
-Week 10+:   Future     ░░░░░░░░░░░░░░░░░░░░░ (planned)
+Week 8-9:   Security   ████████████████████ 100%
+Week 9-10:  Quality    ████████████████████ 100%
+Week 10-11: Security II ████████████████░░░░  90%
+Week 11+:   Future     ░░░░░░░░░░░░░░░░░░░░░ (planned)
 ```
 
-**Overall Progress: ~90% — Core complete, hardening in progress**
+**Overall Progress: ~97% — Core complete, final hardening in progress**
 
 ---
 

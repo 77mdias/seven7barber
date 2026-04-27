@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { BetterAuthController } from './auth-better.controller';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -31,7 +30,7 @@ if (!jwtSecret) {
     ]),
   ],
   providers: [AuthService, JwtStrategy, RolesGuard],
-  controllers: [AuthController, BetterAuthController],
+  controllers: [AuthController],
   exports: [AuthService, RolesGuard, ThrottlerModule],
 })
 export class AuthModule {}

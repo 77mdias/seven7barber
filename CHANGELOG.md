@@ -1,5 +1,45 @@
 # Changelog
 
+## [PHASE-09] - 2026-04-27
+
+### Auth & Security Fixes
+
+#### Dual Auth System Resolved
+- **Files:** `seven7barber-api/src/auth/auth.module.ts`, `seven7barber-api/src/auth/auth-better.controller.ts`
+- **Change:** Removed `BetterAuthController` that used `@All('*path')` catch-all intercepting all `/auth/*` routes. JWT-based `AuthController` now handles all requests alone.
+- **Impact:** Predictable auth routing, no more conflicts.
+
+#### Reviews Ownership Verification
+- **Files:** `seven7barber-api/src/reviews/reviews.controller.ts`, `seven7barber-api/src/reviews/reviews.service.ts`
+- **Change:** Added `userId` extraction from JWT token in controller. Service now verifies the authenticated user owns the appointment before allowing review creation.
+- **Impact:** Users can only review their own completed appointments.
+
+#### Web Auth Endpoint URLs Fixed
+- **Files:** `seven7barber-web/src/server/auth.ts`, `seven7barber-web/src/lib/auth-client.ts`, `seven7barber-web/src/app/login/page.tsx`
+- **Change:** Fixed all wrong endpoint URLs:
+  - `/auth/sign-in/email` → `/auth/login`
+  - `/auth/sign-up/email` → `/auth/register`
+  - `/auth/get-session` → `/auth/me`
+  - Added `useSession().refetch()` call after successful login
+- **Impact:** Web auth flows now work correctly end-to-end.
+
+#### Payments Persistence to Database
+- **Files:** `seven7barber-api/src/payments/payments.service.ts`, `seven7barber-api/prisma/schema.prisma`
+- **Change:** Replaced in-memory `Map` with `PaymentSession` Prisma model. Added `PaymentMethod` and `PaymentStatus` enums.
+- **Impact:** Payment sessions survive server restarts.
+
+#### Additional Fixes
+- Fixed Zod error property in auth controller (`parsed.error.errors` → `parsed.error.issues`)
+- `BetterAuthController` deleted (orphaned after T-03)
+
+### Documentation Updated
+- PHASE-09 phase board updated (9/10 tasks complete)
+- PHASE-09 phase.md requirements checklist updated
+- ROADMAP.md updated with Phase 9 and Phase 8 marked complete
+- docs/development/ROADMAP.md updated with PHASE-09 section
+
+---
+
 ## [Security Fix] - 2026-04-26
 
 ### Critical Security Fixes
