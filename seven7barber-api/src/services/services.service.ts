@@ -2,11 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateServiceDto,
-  CreateServiceSchema,
 } from './dto/create-service.dto';
 import {
   UpdateServiceDto,
-  UpdateServiceSchema,
 } from './dto/update-service.dto';
 import { Prisma } from '@prisma/client';
 
@@ -28,24 +26,24 @@ export class ServicesService {
   }
 
   async create(dto: CreateServiceDto) {
-    const parsed = CreateServiceSchema.parse(dto);
+    // M3: Zod validation already done in controller - dto is already parsed
     return this.prisma.service.create({
       data: {
-        ...parsed,
-        price: parsed.price as unknown as Prisma.Decimal,
+        ...dto,
+        price: dto.price as unknown as Prisma.Decimal,
       },
     });
   }
 
   async update(id: string, dto: UpdateServiceDto) {
     await this.findOne(id);
-    const parsed = UpdateServiceSchema.parse(dto);
+    // M3: Zod validation already done in controller - dto is already parsed
     return this.prisma.service.update({
       where: { id },
       data: {
-        ...parsed,
-        ...(parsed.price !== undefined && {
-          price: parsed.price,
+        ...dto,
+        ...(dto.price !== undefined && {
+          price: dto.price,
         }),
       },
     });

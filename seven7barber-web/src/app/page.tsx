@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HeaderAuth } from "@/components/header-auth";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -57,7 +59,10 @@ export default function Home() {
               Barbearia premium com profissionais experientes, ambiente sofisticado
               e o cuidado que você merece.
             </p>
-            <button className="relative group">
+            <button
+              onClick={() => router.push('/booking')}
+              className="relative group"
+            >
               <div className="absolute inset-0 bg-[#111] translate-x-2 translate-y-2 clip-slant-right z-0" />
               <div className="relative bg-[#732F3B] text-white px-10 py-5 clip-slant-right border-2 border-black font-heading text-xl uppercase tracking-wider flex items-center gap-3 hover:bg-white hover:text-[#732F3B] transition-colors z-10">
                 Agendar Horário

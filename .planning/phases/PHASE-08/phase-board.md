@@ -1,9 +1,9 @@
 # PHASE-08: Code Quality & Polish — Task Board
 
 **Phase:** 08
-**Status:** 🟡 PLANNING
+**Status:** ✅ COMPLETE
 **Total Tasks:** 8
-**Completed:** 0
+**Completed:** 8
 
 ---
 
@@ -13,14 +13,14 @@
 
 | # | Task | Priority | Status | Notes |
 |---|------|----------|--------|-------|
-| T-01 | Fix admin error handling - use NestJS exceptions | MEDIUM | ⏳ Pending | Replace throw new Error() |
-| T-02 | Add input validation on admin date filters | MEDIUM | ⏳ Pending | Add pagination limit |
-| T-03 | Remove double Zod validation | MEDIUM | ⏳ Pending | Single validation point |
-| T-04 | Fix barbers data leak - exclude password hash | MEDIUM | ⏳ Pending | Add select clause |
-| T-05 | Add error boundaries to all web routes | MEDIUM | ⏳ Pending | error.tsx files |
-| T-06 | Fix non-functional UI elements | MEDIUM | ⏳ Pending | Cancel button, hero CTA |
-| T-07 | Fix case sensitive voucher lookup | LOW | ⏳ Pending | Case-insensitive |
-| T-08 | Fix or remove noop provider wrapper | LOW | ⏳ Pending | providers.tsx |
+| T-01 | Fix admin error handling - use NestJS exceptions | MEDIUM | ✅ Done | Replaced throw Error() with BadRequestException |
+| T-02 | Add input validation on admin date filters | MEDIUM | ✅ Done | Added date validation and pagination limits |
+| T-03 | Remove double Zod validation | MEDIUM | ✅ Done | Single validation point in controller |
+| T-04 | Fix barbers data leak - exclude password hash | MEDIUM | ✅ Done | Added select clause to exclude password |
+| T-05 | Add error boundaries to all web routes | MEDIUM | ✅ Done | Created error.tsx for all routes |
+| T-06 | Fix non-functional UI elements | MEDIUM | ✅ Done | Cancel button handler + hero CTA navigation |
+| T-07 | Fix case sensitive voucher lookup | LOW | ✅ Done | Case-insensitive lookup via toUpperCase() |
+| T-08 | Fix or remove noop provider wrapper | LOW | ✅ Done | Removed unused providers.tsx |
 
 ---
 

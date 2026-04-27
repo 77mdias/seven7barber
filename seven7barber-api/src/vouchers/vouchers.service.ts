@@ -6,8 +6,9 @@ export class VouchersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateVoucher(code: string, userId?: string) {
+    // L4: Case-insensitive lookup - codes are stored uppercase
     const voucher = await this.prisma.voucher.findUnique({
-      where: { code },
+      where: { code: code.toUpperCase() },
     });
 
     if (!voucher) {

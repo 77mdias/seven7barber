@@ -33,6 +33,38 @@ type FilterType = 'all' | 'upcoming' | 'completed' | 'cancelled';
 
 export default function AppointmentsPage() {
   const [filter, setFilter] = useState<FilterType>('all');
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const handleCancel = async (id: string) => {
+    if (!confirm('Tem certeza que deseja cancelar este agendamento?')) {
+      return;
+    }
+
+    setCancellingId(id);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/appointments/${id}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        // Update local state to reflect cancellation
+        window.location.reload();
+      } else {
+        alert('Erro ao cancelar agendamento. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Cancel error:', error);
+      alert('Erro ao cancelar agendamento. Tente novamente.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const filteredAppointments = MOCK_APPOINTMENTS.filter((apt) => {
     if (filter === 'all') return true;
@@ -152,8 +184,12 @@ export default function AppointmentsPage() {
                       )}
 
                       {canCancel(apt) && (
-                        <button className="text-red-400 hover:text-red-300 text-sm font-medium">
-                          Cancelar
+                        <button
+                          onClick={() => handleCancel(apt.id)}
+                          disabled={cancellingId === apt.id}
+                          className="text-red-400 hover:text-red-300 text-sm font-medium disabled:opacity-50"
+                        >
+                          {cancellingId === apt.id ? 'Cancelando...' : 'Cancelar'}
                         </button>
                       )}
                     </div>
