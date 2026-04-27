@@ -17,6 +17,10 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Seven7Barber | Barbearia Premium",
   description: "Sistema de agendamento da barbearia Seven7Barber",
+  icons: {
+    icon: "/images/logo77barber.png",
+    apple: "/images/logo77barber.png",
+  },
 };
 
 export default function RootLayout({
