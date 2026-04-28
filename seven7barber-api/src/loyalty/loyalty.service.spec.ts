@@ -1,8 +1,41 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoyaltyService } from './loyalty.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { LoyaltyTier, TransactionType, TIER_CONFIG, FREE_SERVICES } from './enums/loyalty.enums';
+import {
+  ConflictException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  LoyaltyTier,
+  TransactionType,
+  TIER_CONFIG,
+  FREE_SERVICES,
+  EARN_POINTS,
+  POINTS_CONFIG,
+} from './enums/loyalty.enums';
+import { PointsStrategyFactory } from './strategies/points-strategy.factory';
+
+const mockPointsStrategyFactory = {
+  getStrategy: jest.fn((type: TransactionType) => ({
+    transactionType: type,
+    calculate: jest.fn((context: { appointmentPrice?: number }) => {
+      switch (type) {
+        case TransactionType.EARN_APPOINTMENT:
+          if (!context.appointmentPrice) return 0;
+          return Math.floor(context.appointmentPrice * POINTS_CONFIG.CONVERSION_RATE);
+        case TransactionType.EARN_REVIEW:
+          return EARN_POINTS.REVIEW;
+        case TransactionType.EARN_REFERRAL:
+          return EARN_POINTS.REFERRAL;
+        case TransactionType.EARN_BIRTHDAY:
+          return EARN_POINTS.BIRTHDAY;
+        default:
+          return 0;
+      }
+    }),
+  })),
+};
 
 describe('LoyaltyService', () => {
   let service: LoyaltyService;
@@ -35,6 +68,7 @@ describe('LoyaltyService', () => {
       },
       loyaltyTransaction: {
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         create: jest.fn(),
         findMany: jest.fn(),
       },
@@ -47,6 +81,7 @@ describe('LoyaltyService', () => {
       providers: [
         LoyaltyService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: PointsStrategyFactory, useValue: mockPointsStrategyFactory },
       ],
     }).compile();
 
@@ -57,9 +92,11 @@ describe('LoyaltyService', () => {
   describe('C1 | RED | should calculate points from appointment price | ✅ FAIL', () => {
     it('should earn 10 points per R$1 spent (50 points = R$5)', async () => {
       const appointmentPrice = 150; // R$150 -> 1500 points
-      const expectedPoints = Math.floor(appointmentPrice * 0.10); // 1500
+      const expectedPoints = Math.floor(appointmentPrice * 0.1); // 1500
 
-      const result = await service.calculateEarnPoints('EARN_APPOINTMENT', { appointmentPrice });
+      const result = await service.calculateEarnPoints('EARN_APPOINTMENT', {
+        appointmentPrice,
+      });
 
       expect(result).toBe(expectedPoints);
     });
@@ -87,10 +124,14 @@ describe('LoyaltyService', () => {
         totalPoints: initialPoints + 10,
       });
 
-      const result = await service.earnPoints(userId, TransactionType.EARN_REVIEW, {
+      const result = await service.earnPoints(
         userId,
-        type: TransactionType.EARN_REVIEW,
-      });
+        TransactionType.EARN_REVIEW,
+        {
+          userId,
+          type: TransactionType.EARN_REVIEW,
+        },
+      );
 
       expect(result.points).toBe(10);
       expect(result.type).toBe(TransactionType.EARN_REVIEW);
@@ -116,11 +157,15 @@ describe('LoyaltyService', () => {
         createdAt: new Date(),
       });
 
-      const result = await service.earnPoints(referrerId, TransactionType.EARN_REFERRAL, {
-        userId: referrerId,
-        type: TransactionType.EARN_REFERRAL,
-        referralUserId: referredId,
-      });
+      const result = await service.earnPoints(
+        referrerId,
+        TransactionType.EARN_REFERRAL,
+        {
+          userId: referrerId,
+          type: TransactionType.EARN_REFERRAL,
+          referralUserId: referredId,
+        },
+      );
 
       expect(result.points).toBe(20);
     });
@@ -152,10 +197,14 @@ describe('LoyaltyService', () => {
         createdAt: new Date(),
       });
 
-      const result = await service.earnPoints(userId, TransactionType.EARN_BIRTHDAY, {
+      const result = await service.earnPoints(
         userId,
-        type: TransactionType.EARN_BIRTHDAY,
-      });
+        TransactionType.EARN_BIRTHDAY,
+        {
+          userId,
+          type: TransactionType.EARN_BIRTHDAY,
+        },
+      );
 
       expect(result.points).toBe(25);
     });
@@ -166,24 +215,8 @@ describe('LoyaltyService', () => {
       const appointmentId = 'appt-duplicate-123';
       const userId = 'user-123';
 
-      // First time - should succeed
-      prismaService.loyaltyTransaction.findUnique.mockResolvedValueOnce(null);
-      prismaService.loyaltyAccount.findUnique.mockResolvedValue({
-        ...mockUser.loyaltyAccount,
-        totalPoints: 100,
-      });
-      prismaService.loyaltyTransaction.create.mockResolvedValue({
-        id: 'tx-first',
-        userId,
-        type: TransactionType.EARN_APPOINTMENT,
-        points: 500,
-        balanceAfter: 600,
-        idempotencyKey: `appt-${appointmentId}`,
-        createdAt: new Date(),
-      });
-
-      // Second time - should fail (duplicate)
-      prismaService.loyaltyTransaction.findUnique.mockResolvedValue({
+      // Always return an existing transaction (duplicate detected)
+      prismaService.loyaltyTransaction.findFirst.mockResolvedValue({
         id: 'tx-first',
         userId,
         type: TransactionType.EARN_APPOINTMENT,
@@ -198,6 +231,7 @@ describe('LoyaltyService', () => {
           userId,
           type: TransactionType.EARN_APPOINTMENT,
           appointmentId,
+          appointmentPrice: 50,
         }),
       ).rejects.toThrow(ConflictException);
     });
@@ -230,11 +264,15 @@ describe('LoyaltyService', () => {
         createdAt: new Date(),
       });
 
-      const result = await service.earnPoints(userId, TransactionType.EARN_APPOINTMENT, {
+      const result = await service.earnPoints(
         userId,
-        type: TransactionType.EARN_APPOINTMENT,
-        appointmentPrice: 200,
-      });
+        TransactionType.EARN_APPOINTMENT,
+        {
+          userId,
+          type: TransactionType.EARN_APPOINTMENT,
+          appointmentPrice: 200,
+        },
+      );
 
       // After earning, tier should upgrade
       expect(result.metadata?.tierUpgrade?.upgraded).toBe(true);
@@ -285,7 +323,7 @@ describe('LoyaltyService', () => {
         points: pointsToRedeem,
       });
 
-      expect(result.conversionRate).toBe(0.10); // R$10 from 100 pts
+      expect(result.conversionRate).toBe(0.1); // R$10 from 100 pts
     });
   });
 
@@ -315,15 +353,17 @@ describe('LoyaltyService', () => {
       const appointmentId = 'appt-cancel-123';
       const userId = 'user-cancel';
 
-      prismaService.loyaltyTransaction.findMany.mockResolvedValue([{
-        id: 'tx-original',
-        userId,
-        type: TransactionType.EARN_APPOINTMENT,
-        points: 500,
-        balanceAfter: 600,
-        idempotencyKey: `appt-${appointmentId}`,
-        createdAt: new Date(),
-      }]);
+      prismaService.loyaltyTransaction.findMany.mockResolvedValue([
+        {
+          id: 'tx-original',
+          userId,
+          type: TransactionType.EARN_APPOINTMENT,
+          points: 500,
+          balanceAfter: 600,
+          idempotencyKey: `appt-${appointmentId}`,
+          createdAt: new Date(),
+        },
+      ]);
       prismaService.loyaltyTransaction.create.mockResolvedValue({
         id: 'tx-reversal-pending',
         userId,
@@ -333,7 +373,10 @@ describe('LoyaltyService', () => {
         createdAt: new Date(),
       });
 
-      const result = await service.handleAppointmentCancellation(appointmentId, userId);
+      const result = await service.handleAppointmentCancellation(
+        appointmentId,
+        userId,
+      );
 
       expect(result.status).toBe('PENDING_REVERSAL');
     });

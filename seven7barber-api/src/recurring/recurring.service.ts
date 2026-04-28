@@ -1,33 +1,27 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { RecurrencePattern, RecurrenceStatus } from './interfaces/recurring.interface';
+import { RecurrenceStrategyFactory } from './strategies/recurrence-strategy.factory';
+import {
+  RecurrencePattern,
+  RecurrenceStatus,
+} from './interfaces/recurring.interface';
 
 const MAX_INSTANCES = 12;
 
 @Injectable()
 export class RecurringService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private recurrenceStrategyFactory: RecurrenceStrategyFactory,
+  ) {}
 
   generateNextDate(pattern: RecurrencePattern, lastDate: Date): Date {
-    const next = new Date(lastDate);
-
-    switch (pattern) {
-      case RecurrencePattern.WEEKLY:
-        next.setDate(next.getDate() + 7);
-        break;
-      case RecurrencePattern.BIWEEKLY:
-        next.setDate(next.getDate() + 14);
-        break;
-      case RecurrencePattern.MONTHLY:
-        next.setMonth(next.getMonth() + 1);
-        // Handle month-end edge case (e.g., Jan 31 -> Feb 28)
-        if (next.getDate() !== lastDate.getDate()) {
-          next.setDate(0); // Go to last day of previous month
-        }
-        break;
-    }
-
-    return next;
+    const strategy = this.recurrenceStrategyFactory.getStrategy(pattern);
+    return strategy.nextDate(lastDate);
   }
 
   async generateNextBatch(patternId: string): Promise<Date[]> {
@@ -52,7 +46,10 @@ export class RecurringService {
     let currentDate = pattern.lastRunDate || pattern.nextRunDate || new Date();
 
     for (let i = 0; i < Math.min(remaining, MAX_INSTANCES); i++) {
-      currentDate = this.generateNextDate(pattern.pattern as RecurrencePattern, currentDate);
+      currentDate = this.generateNextDate(
+        pattern.pattern as RecurrencePattern,
+        currentDate,
+      );
       dates.push(new Date(currentDate));
     }
 
@@ -102,7 +99,9 @@ export class RecurringService {
     return { id: pattern.id, nextRunDate: pattern.nextRunDate };
   }
 
-  async handleSlotUnavailable(patternId: string): Promise<{ status: RecurrenceStatus; notificationSent: boolean }> {
+  async handleSlotUnavailable(
+    patternId: string,
+  ): Promise<{ status: RecurrenceStatus; notificationSent: boolean }> {
     await this.prisma.recurringPattern.update({
       where: { id: patternId },
       data: { status: RecurrenceStatus.PAUSED },
@@ -139,11 +138,16 @@ export class RecurringService {
           data: { status: 'CANCELLED' as any },
         });
       }
-      return { status: RecurrenceStatus.ACTIVE, cancelledAppointmentId: appointmentId };
+      return {
+        status: RecurrenceStatus.ACTIVE,
+        cancelledAppointmentId: appointmentId,
+      };
     }
   }
 
-  async recordNoShow(patternId: string): Promise<{ paused: boolean; noShowCount: number }> {
+  async recordNoShow(
+    patternId: string,
+  ): Promise<{ paused: boolean; noShowCount: number }> {
     const pattern = await this.prisma.recurringPattern.findUnique({
       where: { id: patternId },
     });
@@ -216,7 +220,10 @@ export class RecurringService {
     return { propagated: false };
   }
 
-  async editAndPropagate(patternId: string, newDateTime: Date): Promise<{ propagated: boolean }> {
+  async editAndPropagate(
+    patternId: string,
+    newDateTime: Date,
+  ): Promise<{ propagated: boolean }> {
     const pattern = await this.prisma.recurringPattern.findUnique({
       where: { id: patternId },
     });

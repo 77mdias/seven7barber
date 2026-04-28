@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
+import { PaymentStrategyFactory } from './strategies/payment-strategy.factory';
 
 function computeSignature(sessionId: string, status: string): string {
   return crypto
@@ -11,13 +12,35 @@ function computeSignature(sessionId: string, status: string): string {
     .digest('hex');
 }
 
+const createMockStrategy = (method: string) => ({
+  method,
+  enrichSession: jest.fn((sessionId: string, result: any) => {
+    if (method === 'PIX') {
+      result.qrCode = `mock-pix-qr-${sessionId}`;
+    }
+    if (method === 'BOLETO') {
+      result.receiptUrl = `http://mockboleto.com/${sessionId}`;
+    }
+    return Promise.resolve(result);
+  }),
+});
+
+const mockPaymentStrategyFactory = {
+  getStrategy: jest.fn((method: string) => createMockStrategy(method)),
+};
+
 const mockSessions = new Map<string, any>();
 
 const mockPrismaService = {
   paymentSession: {
     create: jest.fn(({ data }) => {
       const id = `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const session = { id, ...data, createdAt: new Date(), updatedAt: new Date() };
+      const session = {
+        id,
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       mockSessions.set(id, session);
       return session;
     }),
@@ -45,6 +68,7 @@ describe('PaymentsService', () => {
       providers: [
         PaymentsService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: PaymentStrategyFactory, useValue: mockPaymentStrategyFactory },
       ],
     }).compile();
 

@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   LoyaltyTier,
@@ -8,35 +13,35 @@ import {
   EARN_POINTS,
   FREE_SERVICES,
 } from './enums/loyalty.enums';
-import { LoyaltyTransaction, TierUpgradeResult } from './interfaces/loyalty.interface';
+import {
+  LoyaltyTransaction,
+  TierUpgradeResult,
+} from './interfaces/loyalty.interface';
+import { PointsStrategyFactory } from './strategies/points-strategy.factory';
 
 @Injectable()
 export class LoyaltyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private pointsStrategyFactory: PointsStrategyFactory,
+  ) {}
 
   async calculateEarnPoints(
     type: TransactionType,
     context: { appointmentPrice?: number },
   ): Promise<number> {
-    switch (type) {
-      case TransactionType.EARN_APPOINTMENT:
-        if (!context.appointmentPrice) return 0;
-        return Math.floor(context.appointmentPrice * POINTS_CONFIG.CONVERSION_RATE);
-      case TransactionType.EARN_REVIEW:
-        return EARN_POINTS.REVIEW;
-      case TransactionType.EARN_REFERRAL:
-        return EARN_POINTS.REFERRAL;
-      case TransactionType.EARN_BIRTHDAY:
-        return EARN_POINTS.BIRTHDAY;
-      default:
-        return 0;
-    }
+    const strategy = this.pointsStrategyFactory.getStrategy(type);
+    return strategy.calculate(context);
   }
 
   async earnPoints(
     userId: string,
     type: TransactionType,
-    context: { appointmentId?: string; referralUserId?: string; appointmentPrice?: number },
+    context: {
+      appointmentId?: string;
+      referralUserId?: string;
+      appointmentPrice?: number;
+    },
   ): Promise<LoyaltyTransaction> {
     // Check idempotency for appointment-based earnings
     if (context.appointmentId) {
@@ -47,7 +52,9 @@ export class LoyaltyService {
         },
       });
       if (existing) {
-        throw new ConflictException('Points already awarded for this appointment');
+        throw new ConflictException(
+          'Points already awarded for this appointment',
+        );
       }
     }
 
@@ -58,7 +65,13 @@ export class LoyaltyService {
 
     if (!account) {
       account = await this.prisma.loyaltyAccount.create({
-        data: { userId, totalPoints: 0, conversionPoints: 0, tierPoints: 0, currentTier: LoyaltyTier.BRONZE },
+        data: {
+          userId,
+          totalPoints: 0,
+          conversionPoints: 0,
+          tierPoints: 0,
+          currentTier: LoyaltyTier.BRONZE,
+        },
       });
     }
 
@@ -76,10 +89,21 @@ export class LoyaltyService {
         type,
         points,
         balanceAfter: account.totalPoints + points,
-        idempotencyKey: context.appointmentId ? `appt-${context.appointmentId}` : undefined,
-        expiresAt: type === TransactionType.EARN_APPOINTMENT
-          ? new Date(Date.now() + POINTS_CONFIG.EXPIRY_MONTHS_CONVERSION * 30 * 24 * 60 * 60 * 1000)
+        idempotencyKey: context.appointmentId
+          ? `appt-${context.appointmentId}`
           : undefined,
+        expiresAt:
+          type === TransactionType.EARN_APPOINTMENT
+            ? new Date(
+                Date.now() +
+                  POINTS_CONFIG.EXPIRY_MONTHS_CONVERSION *
+                    30 *
+                    24 *
+                    60 *
+                    60 *
+                    1000,
+              )
+            : undefined,
       },
     });
 
@@ -97,12 +121,16 @@ export class LoyaltyService {
       where: { userId },
       data: {
         totalPoints: newTotalPoints,
-        conversionPoints: type === TransactionType.EARN_APPOINTMENT
-          ? account.conversionPoints + points
-          : account.conversionPoints,
+        conversionPoints:
+          type === TransactionType.EARN_APPOINTMENT
+            ? account.conversionPoints + points
+            : account.conversionPoints,
         tierPoints: account.tierPoints + points,
         currentTier: newTier,
-        birthdayAwardedAt: type === TransactionType.EARN_BIRTHDAY ? new Date() : account.birthdayAwardedAt,
+        birthdayAwardedAt:
+          type === TransactionType.EARN_BIRTHDAY
+            ? new Date()
+            : account.birthdayAwardedAt,
       },
     });
 
@@ -112,12 +140,20 @@ export class LoyaltyService {
   async redeemPoints(
     userId: string,
     request: { type: string; points: number; serviceId?: string },
-  ): Promise<{ conversionRate: number; monetaryValue: number; serviceName?: string }> {
+  ): Promise<{
+    conversionRate: number;
+    monetaryValue: number;
+    serviceName?: string;
+  }> {
     if (request.points < POINTS_CONFIG.REDEEM_MIN_POINTS) {
-      throw new BadRequestException(`Minimum ${POINTS_CONFIG.REDEEM_MIN_POINTS} points required for redemption`);
+      throw new BadRequestException(
+        `Minimum ${POINTS_CONFIG.REDEEM_MIN_POINTS} points required for redemption`,
+      );
     }
 
-    const account = await this.prisma.loyaltyAccount.findUnique({ where: { userId } });
+    const account = await this.prisma.loyaltyAccount.findUnique({
+      where: { userId },
+    });
     if (!account) {
       throw new NotFoundException('Loyalty account not found');
     }
@@ -133,7 +169,9 @@ export class LoyaltyService {
     // Handle free service redemption
     let serviceName: string | undefined;
     if (request.type === 'FREE_SERVICE' && request.serviceId) {
-      const freeService = Object.values(FREE_SERVICES).find(s => s.pointsRequired === request.points);
+      const freeService = Object.values(FREE_SERVICES).find(
+        (s) => s.pointsRequired === request.points,
+      );
       if (freeService) {
         serviceName = freeService.name;
       }
@@ -143,7 +181,10 @@ export class LoyaltyService {
     await this.prisma.loyaltyTransaction.create({
       data: {
         userId,
-        type: request.type === 'FREE_SERVICE' ? TransactionType.REDEEM_SERVICE : TransactionType.REDEEM_DISCOUNT,
+        type:
+          request.type === 'FREE_SERVICE'
+            ? TransactionType.REDEEM_SERVICE
+            : TransactionType.REDEEM_DISCOUNT,
         points: -request.points,
         balanceAfter: account.totalPoints - request.points,
       },
@@ -161,7 +202,10 @@ export class LoyaltyService {
     return { conversionRate, monetaryValue, serviceName };
   }
 
-  async handleAppointmentCancellation(appointmentId: string, userId: string): Promise<{ status: string }> {
+  async handleAppointmentCancellation(
+    appointmentId: string,
+    userId: string,
+  ): Promise<{ status: string }> {
     // Find all transactions for this appointment
     const transactions = await this.prisma.loyaltyTransaction.findMany({
       where: {
@@ -170,8 +214,8 @@ export class LoyaltyService {
       },
     });
 
-    const pendingReversal = transactions.filter(t =>
-      t.type === TransactionType.EARN_APPOINTMENT && t.points > 0
+    const pendingReversal = transactions.filter(
+      (t) => t.type === TransactionType.EARN_APPOINTMENT && t.points > 0,
     );
 
     if (pendingReversal.length === 0) {
@@ -203,10 +247,14 @@ export class LoyaltyService {
   }
 
   private calculateTier(totalPoints: number): LoyaltyTier {
-    if (totalPoints >= TIER_CONFIG[LoyaltyTier.RADIANTE].minPoints) return LoyaltyTier.RADIANTE;
-    if (totalPoints >= TIER_CONFIG[LoyaltyTier.DIAMANTE].minPoints) return LoyaltyTier.DIAMANTE;
-    if (totalPoints >= TIER_CONFIG[LoyaltyTier.OURO].minPoints) return LoyaltyTier.OURO;
-    if (totalPoints >= TIER_CONFIG[LoyaltyTier.PRATA].minPoints) return LoyaltyTier.PRATA;
+    if (totalPoints >= TIER_CONFIG[LoyaltyTier.RADIANTE].minPoints)
+      return LoyaltyTier.RADIANTE;
+    if (totalPoints >= TIER_CONFIG[LoyaltyTier.DIAMANTE].minPoints)
+      return LoyaltyTier.DIAMANTE;
+    if (totalPoints >= TIER_CONFIG[LoyaltyTier.OURO].minPoints)
+      return LoyaltyTier.OURO;
+    if (totalPoints >= TIER_CONFIG[LoyaltyTier.PRATA].minPoints)
+      return LoyaltyTier.PRATA;
     return LoyaltyTier.BRONZE;
   }
 

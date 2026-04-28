@@ -2,13 +2,46 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RecurringService } from './recurring.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { RecurrencePattern, RecurrenceStatus } from './interfaces/recurring.interface';
+import {
+  RecurrencePattern,
+  RecurrenceStatus,
+} from './interfaces/recurring.interface';
+import { RecurrenceStrategyFactory } from './strategies/recurrence-strategy.factory';
+
+const mockRecurrenceStrategyFactory = {
+  getStrategy: jest.fn((pattern: RecurrencePattern) => ({
+    pattern,
+    nextDate: jest.fn((lastDate: Date) => {
+      const next = new Date(lastDate);
+      switch (pattern) {
+        case RecurrencePattern.WEEKLY:
+          next.setDate(next.getDate() + 7);
+          return next;
+        case RecurrencePattern.BIWEEKLY:
+          next.setDate(next.getDate() + 14);
+          return next;
+        case RecurrencePattern.MONTHLY:
+          next.setMonth(next.getMonth() + 1);
+          if (next.getDate() !== lastDate.getDate()) {
+            next.setDate(0);
+          }
+          return next;
+        default:
+          return next;
+      }
+    }),
+  })),
+};
 
 describe('RecurringService', () => {
   let service: RecurringService;
   let prismaService: jest.Mocked<PrismaService>;
 
-  const mockUser = { id: 'user-recurring-123', email: 'recurring@example.com', name: 'Recurring User' };
+  const mockUser = {
+    id: 'user-recurring-123',
+    email: 'recurring@example.com',
+    name: 'Recurring User',
+  };
   const mockBarber = { id: 'barber-1', name: 'João' };
   const mockService = { id: 'svc-1', name: 'Corte', duration: 60 };
   const mockLocation = { id: 'loc-1', name: 'Seven7Barber Centro' };
@@ -25,6 +58,9 @@ describe('RecurringService', () => {
       appointment: {
         findMany: jest.fn(),
         create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+        findUnique: jest.fn(),
       },
     };
 
@@ -32,6 +68,7 @@ describe('RecurringService', () => {
       providers: [
         RecurringService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: RecurrenceStrategyFactory, useValue: mockRecurrenceStrategyFactory },
       ],
     }).compile();
 
@@ -44,7 +81,10 @@ describe('RecurringService', () => {
       const lastDate = new Date('2026-04-27T14:00:00Z');
       const expectedNext = new Date('2026-05-04T14:00:00Z');
 
-      const result = service.generateNextDate(RecurrencePattern.WEEKLY, lastDate);
+      const result = service.generateNextDate(
+        RecurrencePattern.WEEKLY,
+        lastDate,
+      );
 
       expect(result).toEqual(expectedNext);
     });
@@ -55,7 +95,10 @@ describe('RecurringService', () => {
       const lastDate = new Date('2026-04-27T14:00:00Z');
       const expectedNext = new Date('2026-05-11T14:00:00Z');
 
-      const result = service.generateNextDate(RecurrencePattern.BIWEEKLY, lastDate);
+      const result = service.generateNextDate(
+        RecurrencePattern.BIWEEKLY,
+        lastDate,
+      );
 
       expect(result).toEqual(expectedNext);
     });
@@ -66,7 +109,10 @@ describe('RecurringService', () => {
       const lastDate = new Date('2026-04-27T14:00:00Z');
       const expectedNext = new Date('2026-05-27T14:00:00Z');
 
-      const result = service.generateNextDate(RecurrencePattern.MONTHLY, lastDate);
+      const result = service.generateNextDate(
+        RecurrencePattern.MONTHLY,
+        lastDate,
+      );
 
       expect(result).toEqual(expectedNext);
     });
@@ -78,7 +124,10 @@ describe('RecurringService', () => {
       // Feb doesn't have 31, should use Feb 28 (or 29 in leap year)
       const expectedNext = new Date('2026-02-28T14:00:00Z');
 
-      const result = service.generateNextDate(RecurrencePattern.MONTHLY, lastDate);
+      const result = service.generateNextDate(
+        RecurrencePattern.MONTHLY,
+        lastDate,
+      );
 
       expect(result.getDate()).toBeLessThanOrEqual(28);
     });
@@ -164,7 +213,11 @@ describe('RecurringService', () => {
         status: RecurrenceStatus.ACTIVE,
       } as any);
 
-      const result = await service.cancelRecurring(patternId, 'this_only', appointmentId);
+      const result = await service.cancelRecurring(
+        patternId,
+        'this_only',
+        appointmentId,
+      );
 
       expect(result.status).toBe(RecurrenceStatus.ACTIVE);
       expect(result.cancelledAppointmentId).toBe(appointmentId);
@@ -228,7 +281,11 @@ describe('RecurringService', () => {
         status: RecurrenceStatus.ACTIVE,
       } as any);
 
-      const result = await service.editSingleInstance(patternId, appointmentId, newDateTime);
+      const result = await service.editSingleInstance(
+        patternId,
+        appointmentId,
+        newDateTime,
+      );
 
       expect(result.propagated).toBe(false);
     });

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
+import { PaymentStrategyFactory } from './strategies/payment-strategy.factory';
 
 export enum PaymentMethod {
   PIX = 'PIX',
@@ -43,7 +44,10 @@ export interface PaymentSessionResult {
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly strategyFactory: PaymentStrategyFactory,
+  ) {}
 
   async createPaymentSession(
     dto: CreatePaymentSessionDto,
@@ -69,23 +73,9 @@ export class PaymentsService {
       createdAt: session.createdAt,
     };
 
-    if (dto.method === PaymentMethod.PIX) {
-      result.qrCode = `mock-pix-qr-${session.id}`;
-      await this.prisma.paymentSession.update({
-        where: { id: session.id },
-        data: { qrCode: result.qrCode },
-      });
-    }
-
-    if (dto.method === PaymentMethod.BOLETO) {
-      result.receiptUrl = `http://mockboleto.com/${session.id}`;
-      await this.prisma.paymentSession.update({
-        where: { id: session.id },
-        data: { receiptUrl: result.receiptUrl },
-      });
-    }
-
-    return result;
+    // Strategy pattern: delegate enrichment to the payment method strategy
+    const strategy = this.strategyFactory.getStrategy(dto.method);
+    return strategy.enrichSession(session.id, result);
   }
 
   async processPaymentCallback(

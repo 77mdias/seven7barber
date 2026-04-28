@@ -9,6 +9,14 @@ import {
   DeliveryReceipt,
   NotificationLogEntry,
 } from './interfaces/notification.interface';
+import {
+  NotificationStrategyFactory,
+} from './strategies/notification-strategy.factory';
+import {
+  NotificationContext,
+} from './strategies/notification.strategy';
+
+type AppointmentInfo = NotificationContext['appointment'];
 
 const RETRY_CONFIG = {
   maxAttempts: 3,
@@ -17,15 +25,18 @@ const RETRY_CONFIG = {
 
 const WHATSAPP_TEMPLATES = {
   [NotificationTemplateType.CANCELLATION]: {
-    content: 'Olá {{clientName}}, sua marcação de {{serviceName}} foi cancelada. Data: {{dateTime}}. Em caso de dúvidas, entre em contato.',
+    content:
+      'Olá {{clientName}}, sua marcação de {{serviceName}} foi cancelada. Data: {{dateTime}}. Em caso de dúvidas, entre em contato.',
     variables: ['clientName', 'serviceName', 'dateTime'],
   },
   [NotificationTemplateType.ALTERATION]: {
-    content: 'Olá {{clientName}}, sua marcação de {{serviceName}} foi alterada. Nova hora: {{newTime}}. Anterior: {{oldTime}}.',
+    content:
+      'Olá {{clientName}}, sua marcação de {{serviceName}} foi alterada. Nova hora: {{newTime}}. Anterior: {{oldTime}}.',
     variables: ['clientName', 'serviceName', 'newTime', 'oldTime'],
   },
   [NotificationTemplateType.REMINDER_2H]: {
-    content: 'Olá {{clientName}}, lembrete: sua marcação de {{serviceName}} é em 2 horas ({{dateTime}}) na {{locationName}}. Nos vemos lá!',
+    content:
+      'Olá {{clientName}}, lembrete: sua marcação de {{serviceName}} é em 2 horas ({{dateTime}}) na {{locationName}}. Nos vemos lá!',
     variables: ['clientName', 'serviceName', 'dateTime', 'locationName'],
   },
 };
@@ -35,79 +46,91 @@ export class NotificationsService {
   constructor(
     private configService: ConfigService,
     private httpService: HttpService,
+    private notificationStrategyFactory: NotificationStrategyFactory,
   ) {}
 
-  async sendCancellationNotification(
-    appointment: any,
-    user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
-  ): Promise<{ status: NotificationStatus; message?: string; externalId?: string }> {
-    // Check opt-out
-    if (!user.whatsappOptIn) {
+  async sendNotification(
+    templateType: NotificationTemplateType,
+    context: NotificationContext,
+  ): Promise<{
+    status: NotificationStatus;
+    message?: string;
+    externalId?: string;
+  }> {
+    if (!context.user.whatsappOptIn) {
       await this.logNotification({
-        userId: user.id,
-        appointmentId: appointment.id,
+        userId: context.user.id,
+        appointmentId: context.appointment.id,
         channel: NotificationChannel.WHATSAPP,
-        template: NotificationTemplateType.CANCELLATION,
+        template: templateType,
         status: NotificationStatus.SKIPPED,
         attempts: 0,
       });
       return { status: NotificationStatus.SKIPPED };
     }
 
-    const message = this.interpolateTemplate(
-      NotificationTemplateType.CANCELLATION,
-      {
-        clientName: user.name,
-        serviceName: appointment.service?.name || appointment.serviceName || 'Serviço',
-        dateTime: new Date(appointment.dateTime).toLocaleString('pt-BR'),
-      },
-    );
+    const strategy =
+      this.notificationStrategyFactory.getStrategy(templateType);
+    const message = strategy.buildMessage(context);
 
-    return this.sendWhatsAppWithRetry(user.phone, message, appointment.id);
+    return this.sendWhatsAppWithRetry(
+      context.user.phone,
+      message,
+      context.appointment.id,
+      templateType,
+    );
+  }
+
+  async sendCancellationNotification(
+    appointment: AppointmentInfo,
+    user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
+  ): Promise<{
+    status: NotificationStatus;
+    message?: string;
+    externalId?: string;
+  }> {
+    return this.sendNotification(
+      NotificationTemplateType.CANCELLATION,
+      { appointment, user },
+    );
   }
 
   async sendAlterationNotification(
-    appointment: any,
+    appointment: AppointmentInfo,
     user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
     oldDateTime: Date,
     newDateTime: Date,
-  ): Promise<{ status: NotificationStatus; message: string; externalId?: string }> {
-    if (!user.whatsappOptIn) {
-      return { status: NotificationStatus.SKIPPED, message: '' };
-    }
-
-    const message = this.interpolateTemplate(
+  ): Promise<{
+    status: NotificationStatus;
+    message: string;
+    externalId?: string;
+  }> {
+    return this.sendNotification(
       NotificationTemplateType.ALTERATION,
-      {
-        clientName: user.name,
-        serviceName: appointment.service?.name || appointment.serviceName || 'Serviço',
-        oldTime: oldDateTime.toLocaleString('pt-BR'),
-        newTime: newDateTime.toLocaleString('pt-BR'),
-      },
-    );
-
-    return this.sendWhatsAppWithRetry(user.phone, message, appointment.id);
+      { appointment, user, oldDateTime, newDateTime },
+    ) as Promise<{
+      status: NotificationStatus;
+      message: string;
+      externalId?: string;
+    }>;
   }
 
   async sendReminderNotification(
-    appointment: any,
+    appointment: AppointmentInfo,
     user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
-  ): Promise<{ status: NotificationStatus; message: string; externalId?: string }> {
-    if (!user.whatsappOptIn) {
-      return { status: NotificationStatus.SKIPPED, message: '' };
-    }
-
-    const message = this.interpolateTemplate(
+  ): Promise<{
+    status: NotificationStatus;
+    message: string;
+    externalId?: string;
+  }> {
+    return this.sendNotification(
       NotificationTemplateType.REMINDER_2H,
-      {
-        clientName: user.name,
-        serviceName: appointment.service?.name || appointment.serviceName || 'Serviço',
-        dateTime: new Date(appointment.dateTime).toLocaleString('pt-BR'),
-        locationName: appointment.location?.name || appointment.locationName || 'Seven7Barber',
-      },
-    );
-
-    return this.sendWhatsAppWithRetry(user.phone, message, appointment.id);
+      { appointment, user },
+    ) as Promise<{
+      status: NotificationStatus;
+      message: string;
+      externalId?: string;
+    }>;
   }
 
   private async sendWhatsAppWithRetry(
@@ -115,8 +138,12 @@ export class NotificationsService {
     message: string,
     appointmentId: string,
     templateType: NotificationTemplateType = NotificationTemplateType.CANCELLATION,
-  ): Promise<{ status: NotificationStatus; message: string; externalId?: string }> {
-    let lastError: Error;
+  ): Promise<{
+    status: NotificationStatus;
+    message: string;
+    externalId?: string;
+  }> {
+    let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < RETRY_CONFIG.maxAttempts; attempt++) {
       try {
@@ -157,13 +184,18 @@ export class NotificationsService {
       errorMessage: lastError?.message,
     });
 
-    throw new BadRequestException(`Notification failed after ${RETRY_CONFIG.maxAttempts} attempts: ${lastError?.message}`);
+    throw new BadRequestException(
+      `Notification failed after ${RETRY_CONFIG.maxAttempts} attempts: ${lastError?.message}`,
+    );
   }
 
-  private async sendTwilioWhatsApp(phone: string, message: string): Promise<DeliveryReceipt> {
-    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
-    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
-    const fromNumber = this.configService.get<string>('TWILIO_WHATSAPP_FROM');
+  private async sendTwilioWhatsApp(
+    phone: string,
+    message: string,
+  ): Promise<DeliveryReceipt> {
+    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID') ?? '';
+    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN') ?? '';
+    const fromNumber = this.configService.get<string>('TWILIO_WHATSAPP_FROM') ?? '';
 
     const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 
@@ -230,9 +262,12 @@ export class NotificationsService {
       undelivered: NotificationStatus.FAILED,
     };
 
-    const newStatus = statusMap[payload.MessageStatus] || NotificationStatus.FAILED;
+    const newStatus =
+      statusMap[payload.MessageStatus] || NotificationStatus.FAILED;
 
-    console.log(`[Twilio Webhook] Sid: ${payload.MessageSid}, Status: ${newStatus}`);
+    console.log(
+      `[Twilio Webhook] Sid: ${payload.MessageSid}, Status: ${newStatus}`,
+    );
 
     // In production: update notification log in Prisma
     // await prisma.notificationLog.updateMany({
@@ -261,7 +296,11 @@ export class NotificationsService {
     return { success: true };
   }
 
-  async queueEmail(template: string, data: any, delay?: number): Promise<{ queued: boolean }> {
+  async queueEmail(
+    template: string,
+    data: any,
+    delay?: number,
+  ): Promise<{ queued: boolean }> {
     console.log('[Email Queue]', template, data, delay);
     return { queued: true };
   }
