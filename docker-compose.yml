@@ -4,13 +4,19 @@ services:
     container_name: seven7barber-db
     restart: always
     environment:
-      POSTGRES_USER: seven7barber
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: seven7barber
+      POSTGRES_USER: ${POSTGRES_USER:-seven7barber}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-seven7barber}
     ports:
-      - '5432:5432'
+      - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-seven7barber}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   api:
     build:
@@ -19,11 +25,21 @@ services:
     container_name: seven7barber-api
     restart: always
     ports:
-      - '3000:3000'
+      - '${API_PORT:-3000}:3000'
     environment:
-      DATABASE_URL: postgresql://seven7barber:password123@db:5432/seven7barber?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-seven7barber}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-seven7barber}?schema=public
+      NODE_ENV: ${NODE_ENV:-development}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   web:
     build:
@@ -32,11 +48,12 @@ services:
     container_name: seven7barber-web
     restart: always
     ports:
-      - '3001:3000'
+      - '${WEB_PORT:-3001}:3000'
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   postgres_data:
