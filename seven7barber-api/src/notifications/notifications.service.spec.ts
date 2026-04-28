@@ -190,7 +190,7 @@ describe('NotificationsService', () => {
       const scheduledTime = result.scheduledFor!.getTime();
       const now = Date.now();
       expect(scheduledTime).toBeGreaterThan(now);
-      expect(scheduledTime - now).toBeGreaterThanOrEqual(delay);
+      expect(scheduledTime - now).toBeGreaterThan(delay - 1);
     });
   });
 });
