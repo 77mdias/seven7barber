@@ -36,9 +36,9 @@ FROM oven/bun:1-slim AS production
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nextjs && \
-    adduser --system --uid 1001 nextjs
+# Create non-root user (Debian-based image uses groupadd/useradd)
+RUN groupadd --system --gid 1001 nextjs && \
+    useradd --system --uid 1001 --gid nextjs --no-create-home nextjs
 
 # Copy production dependencies
 COPY --from=deps /app/node_modules ./node_modules
@@ -47,6 +47,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/package.json ./
 COPY --from=build /app/public ./public
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set ownership
 RUN chown -R nextjs:nextjs /app

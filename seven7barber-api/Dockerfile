@@ -35,9 +35,9 @@ FROM oven/bun:1-slim AS production
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nestjs && \
-    adduser --system --uid 1001 nestjs
+# Create non-root user (Debian-based image uses groupadd/useradd)
+RUN groupadd --system --gid 1001 nestjs && \
+    useradd --system --uid 1001 --gid nestjs --no-create-home nestjs
 
 # Copy production dependencies
 COPY --from=deps /app/node_modules ./node_modules
@@ -49,6 +49,10 @@ COPY --from=build /app/package.json ./
 # Copy Prisma schema and generated client
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/prisma ./prisma
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set ownership
 RUN chown -R nestjs:nestjs /app
