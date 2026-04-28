@@ -1,22 +1,12 @@
 # ============================================
-# Stage 1: Dependencies
-# ============================================
-FROM oven/bun:1 AS deps
-
-WORKDIR /app
-
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --production
-
-# ============================================
-# Stage 2: Build
+# Stage 1: Build
 # ============================================
 FROM oven/bun:1 AS build
 
 WORKDIR /app
 
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 COPY . .
 
@@ -30,7 +20,7 @@ ENV NEXT_PUBLIC_CLOUDINARY_CLOUD=$NEXT_PUBLIC_CLOUDINARY_CLOUD
 RUN bun run build
 
 # ============================================
-# Stage 3: Production
+# Stage 2: Production
 # ============================================
 FROM oven/bun:1-slim AS production
 
@@ -40,10 +30,8 @@ WORKDIR /app
 RUN groupadd --system --gid 1001 nextjs && \
     useradd --system --uid 1001 --gid nextjs --no-create-home nextjs
 
-# Copy production dependencies
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy built application
+# Copy built application and dependencies
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/package.json ./
 COPY --from=build /app/public ./public

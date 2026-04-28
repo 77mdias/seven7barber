@@ -1,22 +1,12 @@
 # ============================================
-# Stage 1: Dependencies
-# ============================================
-FROM oven/bun:1 AS deps
-
-WORKDIR /app
-
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --production
-
-# ============================================
-# Stage 2: Build
+# Stage 1: Build
 # ============================================
 FROM oven/bun:1 AS build
 
 WORKDIR /app
 
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
@@ -29,7 +19,7 @@ COPY . .
 RUN bun run build
 
 # ============================================
-# Stage 3: Production
+# Stage 2: Production
 # ============================================
 FROM oven/bun:1-slim AS production
 
@@ -39,14 +29,10 @@ WORKDIR /app
 RUN groupadd --system --gid 1001 nestjs && \
     useradd --system --uid 1001 --gid nestjs --no-create-home nestjs
 
-# Copy production dependencies
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy built application
+# Copy built application and dependencies
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json ./
-
-# Copy Prisma schema and generated client
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/prisma ./prisma
 
