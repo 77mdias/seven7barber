@@ -21,7 +21,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: cd seven7barbar-api && bun test --verbose
+        run: cd seven7barber-api && bun test --verbose
 
   build-api:
     name: Build API
