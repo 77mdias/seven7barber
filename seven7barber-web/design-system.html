@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System — Seven7Barber</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --primary: #732F3B;
+            --primary-dark: #401021;
+            --dark: #111111;
+            --dark-surface: #1a1a1a;
+            --neutral: #272727;
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+            --muted: #9ca3af;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .container { padding: 0 2rem; }
+        }
+        
+        /* Header */
+        .ds-header {
+            background: var(--dark);
+            border-bottom: 2px solid var(--primary);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .ds-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .ds-logo {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+        }
+        
+        .ds-logo span { color: var(--primary); }
+        
+        .ds-nav {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .ds-nav a {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-300);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+        
+        .ds-nav a:hover { color: var(--primary); }
+        
+        /* Sections */
+        .ds-section {
+            padding: 5rem 0;
+        }
+        
+        @media (min-width: 768px) {
+            .ds-section { padding: 7rem 0; }
+        }
+        
+        .ds-section-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .ds-section-title { font-size: 3rem; }
+        }
+        
+        .ds-section-subtitle {
+            color: var(--gray-600);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+        
+        /* Colors */
+        .ds-colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .ds-color {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .ds-color-swatch {
+            height: 100px;
+            display: flex;
+            align-items: flex-end;
+            padding: 0.75rem;
+        }
+        
+        .ds-color-info {
+            padding: 0.75rem;
+            background: var(--white);
+        }
+        
+        .ds-color-name {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        
+        .ds-color-value {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+        
+        /* Typography */
+        .ds-typography {
+            background: var(--white);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .ds-type-sample {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .ds-type-label {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ds-type-spec {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
+        }
+        
+        /* Buttons */
+        .ds-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .ds-btn {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .ds-btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .ds-btn-primary:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .ds-btn-secondary {
+            background: var(--white);
+            color: var(--dark);
+            border: 2px solid var(--white);
+        }
+        
+        .ds-btn-secondary:hover {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+        
+        .ds-btn-outline {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+        
+        .ds-btn-outline:hover {
+            background: var(--white);
+            color: var(--dark);
+        }
+        
+        /* Cards */
+        .ds-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 768px) {
+            .ds-cards { gap: 2rem; }
+        }
+        
+        .ds-card {
+            background: var(--white);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ds-card:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+        }
+        
+        .ds-card-image {
+            height: 14rem;
+            background: var(--primary);
+            position: relative;
+        }
+        
+        .ds-card-icon {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            width: 2rem;
+            height: 2rem;
+            color: var(--white);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .ds-card-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ds-card-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ds-card-desc {
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+            flex: 1;
+        }
+        
+        .ds-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+        
+        .ds-card-price {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* Spacing */
+        .ds-spacing {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .ds-spacing-item {
+            background: var(--white);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        
+        .ds-spacing-label {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ds-spacing-value {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        .ds-spacing-visual {
+            height: 1rem;
+            background: var(--primary);
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Footer */
+        .ds-footer {
+            background: var(--dark);
+            border-top: 4px solid var(--primary);
+            padding: 3rem 0;
+            color: var(--white);
+        }
+        
+        .ds-footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .ds-footer-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        
+        .ds-footer-link {
+            display: block;
+            color: var(--gray-400);
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+        
+        .ds-footer-link:hover { color: var(--primary); }
+        
+        .ds-footer-bottom {
+            border-top: 1px solid var(--gray-800);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="ds-header">
+        <div class="container ds-header-content">
+            <a href="#" class="ds-logo">SEVEN<span>7</span>BARBER</a>
+            <nav class="ds-nav">
+                <a href="#">Serviços</a>
+                <a href="#">Sobre</a>
+                <a href="#">Contato</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Colors Section -->
+    <section class="ds-section" style="background: var(--white);">
+        <div class="container">
+            <h2 class="ds-section-title">Cores</h2>
+            <p class="ds-section-subtitle">Paleta de cores do Seven7Barber</p>
+            
+            <div class="ds-colors">
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--primary);"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">Primary</div>
+                        <div class="ds-color-value">#732F3B</div>
+                    </div>
+                </div>
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--primary-dark);"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">Primary Dark</div>
+                        <div class="ds-color-value">#401021</div>
+                    </div>
+                </div>
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--dark);"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">Dark</div>
+                        <div class="ds-color-value">#111111</div>
+                    </div>
+                </div>
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--dark-surface);"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">Dark Surface</div>
+                        <div class="ds-color-value">#1a1a1a</div>
+                    </div>
+                </div>
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--light-gray);"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">Light Gray</div>
+                        <div class="ds-color-value">#f5f5f5</div>
+                    </div>
+                </div>
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--white); border: 1px solid #eee;"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">White</div>
+                        <div class="ds-color-value">#ffffff</div>
+                    </div>
+                </div>
+                <div class="ds-color">
+                    <div class="ds-color-swatch" style="background: var(--muted);"></div>
+                    <div class="ds-color-info">
+                        <div class="ds-color-name">Muted</div>
+                        <div class="ds-color-value">#9ca3af</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section class="ds-section">
+        <div class="container">
+            <h2 class="ds-section-title">Tipografia</h2>
+            <p class="ds-section-subtitle">Hierarquia tipográfica</p>
+            
+            <div class="ds-typography">
+                <div class="ds-type-sample">
+                    <div class="ds-type-label">H1 — Hero</div>
+                    <div style="font-family: 'Oswald', sans-serif; font-size: 4rem; font-weight: 700; line-height: 1.1;">
+                        Estilo que <span style="color: var(--primary);">define</span> você
+                    </div>
+                    <div class="ds-type-spec">Oswald 700 · 4rem → 5rem (md) → 6rem (lg) · leading-tight</div>
+                </div>
+                
+                <div class="ds-type-sample">
+                    <div class="ds-type-label">H2 — Section</div>
+                    <div style="font-family: 'Oswald', sans-serif; font-size: 2.5rem; font-weight: 700;">
+                        Nossos <span style="color: var(--primary);">Serviços</span>
+                    </div>
+                    <div class="ds-type-spec">Oswald 700 · 2.5rem → 3rem (md)</div>
+                </div>
+                
+                <div class="ds-type-sample">
+                    <div class="ds-type-label">H3 — Card</div>
+                    <div style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 600; text-transform: uppercase;">
+                        Corte Masculino
+                    </div>
+                    <div class="ds-type-spec">Oswald 600 · 1.5rem · uppercase</div>
+                </div>
+                
+                <div class="ds-type-sample">
+                    <div class="ds-type-label">Body</div>
+                    <div style="font-family: 'Poppins', sans-serif; font-size: 1.125rem; line-height: 1.75;">
+                        Barbearia premium com profissionais experientes, ambiente sofisticado e o cuidado que você merece.
+                    </div>
+                    <div class="ds-type-spec">Poppins 400 · 1rem → 1.125rem (md) · leading-relaxed</div>
+                </div>
+                
+                <div class="ds-type-sample">
+                    <div class="ds-type-label">Button</div>
+                    <div style="font-family: 'Oswald', sans-serif; font-size: 1.125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary);">
+                        Agendar Horário
+                    </div>
+                    <div class="ds-type-spec">Oswald 700 · 1.125rem · uppercase · tracking-wider</div>
+                </div>
+                
+                <div class="ds-type-sample">
+                    <div class="ds-type-label">Nav</div>
+                    <div style="font-family: 'Poppins', sans-serif; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-300);">
+                        Serviços
+                    </div>
+                    <div class="ds-type-spec">Poppins 500 · 0.875rem · uppercase · tracking-wider</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Buttons Section -->
+    <section class="ds-section" style="background: var(--dark);">
+        <div class="container">
+            <h2 class="ds-section-title" style="color: var(--white);">Botões</h2>
+            <p class="ds-section-subtitle" style="color: var(--gray-400);">Variantes de botões</p>
+            
+            <div class="ds-buttons">
+                <button class="ds-btn ds-btn-primary">Agendar Horário</button>
+                <button class="ds-btn ds-btn-secondary">Nossos Serviços</button>
+                <button class="ds-btn ds-btn-outline">Ver Mais</button>
+            </div>
+            
+            <div style="background: var(--dark-surface); border-radius: 0.75rem; padding: 1.5rem; margin-top: 2rem;">
+                <div style="color: var(--gray-400); font-size: 0.875rem; margin-bottom: 0.5rem;">Especificações</div>
+                <div style="color: var(--white); font-family: monospace; font-size: 0.875rem;">
+                    Primary: bg-[#732F3B] hover:bg-[#401021] · px-8 py-6 · rounded-lg<br>
+                    Secondary: bg-white text-[#111] · border-2 border-white · hover:bg-[#732F3B]<br>
+                    Outline: bg-transparent text-white · border-2 border-white · hover:bg-white hover:text-[#111]
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cards Section -->
+    <section class="ds-section">
+        <div class="container">
+            <h2 class="ds-section-title">Cards de Serviço</h2>
+            <p class="ds-section-subtitle">Componente de card com imagem</p>
+            
+            <div class="ds-cards">
+                <div class="ds-card">
+                    <div class="ds-card-image" style="background: linear-gradient(to top, rgba(17,17,17,0.6), transparent), var(--primary);">
+                        <svg class="ds-card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L7.05 21.192a2 2 0 01-2.828 0l-.708-.708a2 2 0 010-2.828l7.07-7.071m2.829 2.829L21.192 7.05a2 2 0 000-2.828l-.708-.708a2 2 0 00-2.828 0l-7.071 7.07m2.829 2.829l2.828-2.829"/>
+                        </svg>
+                    </div>
+                    <div class="ds-card-content">
+                        <h3 class="ds-card-title">Corte</h3>
+                        <p class="ds-card-desc">Corte personalizado com acabamento premium. Estilo moderno ou clássico.</p>
+                        <div class="ds-card-footer">
+                            <span class="ds-card-price">R$ 45</span>
+                            <button class="ds-btn ds-btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.875rem;">Agendar</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ds-card">
+                    <div class="ds-card-image" style="background: linear-gradient(to top, rgba(17,17,17,0.6), transparent), var(--neutral);">
+                        <svg class="ds-card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <div class="ds-card-content">
+                        <h3 class="ds-card-title">Barba</h3>
+                        <p class="ds-card-desc">Modelagem e tratamento completo da barba. Toalha quente e produtos premium.</p>
+                        <div class="ds-card-footer">
+                            <span class="ds-card-price">R$ 35</span>
+                            <button class="ds-btn ds-btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.875rem;">Agendar</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ds-card">
+                    <div class="ds-card-image" style="background: linear-gradient(to top, rgba(17,17,17,0.6), transparent), var(--dark);">
+                        <svg class="ds-card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                    </div>
+                    <div class="ds-card-content">
+                        <h3 class="ds-card-title">Combo</h3>
+                        <p class="ds-card-desc">Corte + barba com desconto especial. A experiência completa.</p>
+                        <div class="ds-card-footer">
+                            <span class="ds-card-price">R$ 70</span>
+                            <button class="ds-btn ds-btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.875rem;">Agendar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: var(--white); border-radius: 0.75rem; padding: 1.5rem;">
+                <div style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 1rem;">Especificações do Card</div>
+                <div style="font-family: monospace; font-size: 0.875rem; color: var(--dark);">
+                    Container: bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl<br>
+                    Layout: flex flex-col · items-stretch<br>
+                    Image: h-56 · object-cover · hover:scale-110<br>
+                    Content: p-6 · flex-1<br>
+                    Price: text-[#732F3B] · text-3xl · font-heading<br>
+                    Footer: mt-auto · justify-between
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Spacing Section -->
+    <section class="ds-section" style="background: var(--white);">
+        <div class="container">
+            <h2 class="ds-section-title">Espaçamento</h2>
+            <p class="ds-section-subtitle">Sistema de espaçamento consistente</p>
+            
+            <div class="ds-spacing">
+                <div class="ds-spacing-item">
+                    <div class="ds-spacing-label">Section Padding</div>
+                    <div class="ds-spacing-value">py-20 md:py-28</div>
+                    <div class="ds-spacing-visual" style="width: 100%;"></div>
+                </div>
+                <div class="ds-spacing-item">
+                    <div class="ds-spacing-label">Container</div>
+                    <div class="ds-spacing-value">max-w-7xl px-4 md:px-8</div>
+                    <div class="ds-spacing-visual" style="width: 90%;"></div>
+                </div>
+                <div class="ds-spacing-item">
+                    <div class="ds-spacing-label">Card Gap</div>
+                    <div class="ds-spacing-value">gap-6 md:gap-8</div>
+                    <div class="ds-spacing-visual" style="width: 40%;"></div>
+                </div>
+                <div class="ds-spacing-item">
+                    <div class="ds-spacing-label">Card Padding</div>
+                    <div class="ds-spacing-value">p-6</div>
+                    <div class="ds-spacing-visual" style="width: 30%;"></div>
+                </div>
+                <div class="ds-spacing-item">
+                    <div class="ds-spacing-label">Button Padding</div>
+                    <div class="ds-spacing-value">px-8 py-6</div>
+                    <div class="ds-spacing-visual" style="width: 50%;"></div>
+                </div>
+                <div class="ds-spacing-item">
+                    <div class="ds-spacing-label">Border Radius</div>
+                    <div class="ds-spacing-value">rounded-xl (0.75rem)</div>
+                    <div class="ds-spacing-visual" style="width: 20%; border-radius: 0.75rem;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="ds-footer">
+        <div class="container">
+            <div class="ds-footer-grid">
+                <div>
+                    <a href="#" class="ds-logo" style="display: inline-block; margin-bottom: 1rem;">SEVEN<span>7</span>BARBER</a>
+                    <p style="color: var(--gray-400); line-height: 1.6;">Barbearia premium com os melhores profissionais da cidade.</p>
+                </div>
+                <div>
+                    <h4 class="ds-footer-title">Links</h4>
+                    <a href="#" class="ds-footer-link">Serviços</a>
+                    <a href="#" class="ds-footer-link">Sobre</a>
+                    <a href="#" class="ds-footer-link">Contato</a>
+                    <a href="#" class="ds-footer-link">Agendar</a>
+                </div>
+                <div>
+                    <h4 class="ds-footer-title">Redes Sociais</h4>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <a href="#" style="width: 2.5rem; height: 2.5rem; background: var(--white); color: var(--dark); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">X</a>
+                        <a href="#" style="width: 2.5rem; height: 2.5rem; background: var(--white); color: var(--dark); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">IG</a>
+                        <a href="#" style="width: 2.5rem; height: 2.5rem; background: var(--white); color: var(--dark); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">FB</a>
+                    </div>
+                </div>
+            </div>
+            <div class="ds-footer-bottom">
+                © 2026 Seven7Barber. Todos os direitos reservados.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

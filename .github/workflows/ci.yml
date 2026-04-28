@@ -2,33 +2,129 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+# Cancelar runs anteriores do mesmo branch/PR
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  # ============================================================
+  # JOB 1: Lint & Type-check (rapido, sem deps pesadas)
+  # ============================================================
+  lint:
+    name: Lint & Type-check
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
-      with:
-        bun-version: latest
+      - uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: bun install
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
-    - name: Lint Web
-      run: cd seven7barber-web && bun run lint
-      continue-on-error: true
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            seven7barber-api/node_modules
+            seven7barber-web/node_modules
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
 
-    - name: Build Web
-      run: cd seven7barber-web && bun run build
-      env:
-        NEXT_PUBLIC_API_URL: http://localhost:3000
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-    - name: Test API
-      run: cd seven7barber-api && bun run test
+      - name: Generate Prisma Client
+        run: cd seven7barber-api && bunx prisma generate
+
+      - name: Lint API
+        run: cd seven7barber-api && bun run lint
+        continue-on-error: true
+
+      - name: Type-check API
+        run: cd seven7barber-api && bun run type-check
+        continue-on-error: true
+
+      - name: Lint Web
+        run: cd seven7barber-web && bun run lint
+        continue-on-error: true
+
+      - name: Type-check Web
+        run: cd seven7barber-web && bun run type-check
+        continue-on-error: true
+
+  # ============================================================
+  # JOB 2: Test API (com Prisma generate)
+  # ============================================================
+  test-api:
+    name: Test API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            seven7barber-api/node_modules
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: cd seven7barber-api && bunx prisma generate
+
+      - name: Run API tests
+        run: cd seven7barber-api && bun run test -- --forceExit --detectOpenHandles
+
+  # ============================================================
+  # JOB 3: Build Web
+  # ============================================================
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            seven7barber-web/node_modules
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Web
+        run: cd seven7barber-web && bun run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000

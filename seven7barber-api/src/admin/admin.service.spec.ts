@@ -108,11 +108,11 @@ describe('AdminService', () => {
       expect(result).toHaveProperty('status', 'COMPLETED');
     });
 
-    it('should reject invalid status transitions', () => {
+    it('should reject invalid status transitions', async () => {
       // COMPLETED cannot be changed back to SCHEDULED
-      expect(() =>
+      await expect(
         service.updateAppointmentStatus('appt-completed', 'SCHEDULED'),
-      ).toThrow('Cannot change status of completed appointment');
+      ).rejects.toThrow('Cannot change status of completed appointment');
     });
   });
 

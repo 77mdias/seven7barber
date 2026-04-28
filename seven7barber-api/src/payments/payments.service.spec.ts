@@ -39,6 +39,7 @@ describe('PaymentsService', () => {
   beforeEach(async () => {
     mockSessions.clear();
     jest.clearAllMocks();
+    process.env.PAYMENT_WEBHOOK_SECRET = 'test-webhook-secret';
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

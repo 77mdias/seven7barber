@@ -7,7 +7,7 @@ RUN bun install
 
 COPY . .
 
-RUN npx prisma generate
+RUN bunx prisma generate
 
 EXPOSE 3000
 
