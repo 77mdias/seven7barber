@@ -14,6 +14,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AppointmentsModule } from './appointments/appointments.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     VouchersModule,
     PaymentsModule,
     NotificationsModule,
+    AppointmentsModule,
     HealthModule,
     MetricsModule,
   ],
