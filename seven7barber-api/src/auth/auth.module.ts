@@ -11,6 +11,10 @@ import { OAuthService } from './oauth.service';
 import { OAuthController } from './oauth.controller';
 import { EncryptionService } from './encryption.service';
 import { HttpModule } from '@nestjs/axios';
+import { GitHubOAuthStrategy } from './strategies/github-oauth.strategy';
+import { GoogleOAuthStrategy } from './strategies/google-oauth.strategy';
+import { DiscordOAuthStrategy } from './strategies/discord-oauth.strategy';
+import { OAuthStrategyFactory } from './strategies/oauth-strategy.factory';
 
 const jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret) {
@@ -34,8 +38,24 @@ if (!jwtSecret) {
     ]),
     HttpModule,
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard, OAuthService, EncryptionService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    OAuthService,
+    EncryptionService,
+    GitHubOAuthStrategy,
+    GoogleOAuthStrategy,
+    DiscordOAuthStrategy,
+    OAuthStrategyFactory,
+  ],
   controllers: [AuthController, OAuthController],
-  exports: [AuthService, RolesGuard, ThrottlerModule, OAuthService, EncryptionService],
+  exports: [
+    AuthService,
+    RolesGuard,
+    ThrottlerModule,
+    OAuthService,
+    EncryptionService,
+  ],
 })
 export class AuthModule {}

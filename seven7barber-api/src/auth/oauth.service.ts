@@ -1,34 +1,30 @@
-import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
-import { OAuthProvider, OAUTH_SCOPES, OAUTH_RETRY_CONFIG } from './enums/oauth-provider.enum';
-import { OAuthTokenResponse, OAuthUserInfo } from './interfaces/oauth.interface';
+import {
+  OAuthProvider,
+  OAUTH_SCOPES,
+  OAUTH_RETRY_CONFIG,
+} from './enums/oauth-provider.enum';
+import {
+  OAuthTokenResponse,
+  OAuthUserInfo,
+} from './interfaces/oauth.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from './encryption.service';
 import { JwtService } from '@nestjs/jwt';
-
-const PROVIDER_AUTH_URLS = {
-  [OAuthProvider.GITHUB]: 'https://github.com/login/oauth/authorize',
-  [OAuthProvider.GOOGLE]: 'https://accounts.google.com/o/oauth2/v2/auth',
-  [OAuthProvider.DISCORD]: 'https://discord.com/api/oauth2/authorize',
-};
-
-const PROVIDER_TOKEN_URLS = {
-  [OAuthProvider.GITHUB]: 'https://github.com/login/oauth/access_token',
-  [OAuthProvider.GOOGLE]: 'https://oauth2.googleapis.com/token',
-  [OAuthProvider.DISCORD]: 'https://discord.com/api/oauth2/token',
-};
-
-const PROVIDER_USERINFO_URLS = {
-  [OAuthProvider.GITHUB]: 'https://api.github.com/user',
-  [OAuthProvider.GOOGLE]: 'https://www.googleapis.com/oauth2/v2/userinfo',
-  [OAuthProvider.DISCORD]: 'https://discord.com/api/users/@me',
-};
+import { OAuthStrategyFactory } from './strategies/oauth-strategy.factory';
 
 @Injectable()
 export class OAuthService {
-  private rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+  private rateLimitStore = new Map<
+    string,
+    { count: number; resetAt: number }
+  >();
 
   constructor(
     private httpService: HttpService,
@@ -36,25 +32,25 @@ export class OAuthService {
     private prisma: PrismaService,
     private encryptionService: EncryptionService,
     private jwtService: JwtService,
+    private oauthStrategyFactory: OAuthStrategyFactory,
   ) {}
 
   getAuthorizationUrl(provider: OAuthProvider): string {
-    const clientId = this.configService.get<string>(`OAUTH_${provider.toUpperCase()}_CLIENT_ID`);
+    const clientId = this.configService.get<string>(
+      `OAUTH_${provider.toUpperCase()}_CLIENT_ID`,
+    );
     const redirectUri = this.configService.get<string>('OAUTH_REDIRECT_URI');
     const scope = OAUTH_SCOPES[provider];
     const state = this.generateState();
 
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      scope,
-      state,
-    });
-
-    return `${PROVIDER_AUTH_URLS[provider]}?${params.toString()}`;
+    const strategy = this.oauthStrategyFactory.getStrategy(provider);
+    return strategy.buildAuthorizationUrl(clientId, redirectUri, scope, state);
   }
 
-  async handleOAuthCallback(provider: OAuthProvider, code: string): Promise<{ user: any; access_token: string }> {
+  async handleOAuthCallback(
+    provider: OAuthProvider,
+    code: string,
+  ): Promise<{ user: any; access_token: string }> {
     // Check rate limit
     this.checkRateLimit(provider);
 
@@ -62,10 +58,17 @@ export class OAuthService {
     const tokenResponse = await this.exchangeCodeWithRetry(provider, code);
 
     // Get user info
-    const userInfo = await this.getUserInfoWithRetry(provider, tokenResponse.access_token);
+    const userInfo = await this.getUserInfoWithRetry(
+      provider,
+      tokenResponse.access_token,
+    );
 
     // Find or create user
-    const user = await this.findOrCreateOAuthUser(provider, userInfo, tokenResponse);
+    const user = await this.findOrCreateOAuthUser(
+      provider,
+      userInfo,
+      tokenResponse,
+    );
 
     // Generate JWT
     const payload = { email: user.email, sub: user.id, role: user.role };
@@ -86,31 +89,37 @@ export class OAuthService {
     }
 
     if (record.count >= limit.maxRequests) {
-      throw new BadRequestException('Too many OAuth requests. Please try again later.');
+      throw new BadRequestException(
+        'Too many OAuth requests. Please try again later.',
+      );
     }
 
     record.count++;
   }
 
-  private async exchangeCodeWithRetry(provider: OAuthProvider, code: string): Promise<OAuthTokenResponse> {
-    const tokenUrl = PROVIDER_TOKEN_URLS[provider];
-    const clientId = this.configService.get<string>(`OAUTH_${provider.toUpperCase()}_CLIENT_ID`);
-    const clientSecret = this.configService.get<string>(`OAUTH_${provider.toUpperCase()}_CLIENT_SECRET`);
+  private async exchangeCodeWithRetry(
+    provider: OAuthProvider,
+    code: string,
+  ): Promise<OAuthTokenResponse> {
+    const clientId = this.configService.get<string>(
+      `OAUTH_${provider.toUpperCase()}_CLIENT_ID`,
+    );
+    const clientSecret = this.configService.get<string>(
+      `OAUTH_${provider.toUpperCase()}_CLIENT_SECRET`,
+    );
     const redirectUri = this.configService.get<string>('OAUTH_REDIRECT_URI');
+    const strategy = this.oauthStrategyFactory.getStrategy(provider);
 
-    let lastError: Error;
+    let lastError: Error | undefined;
     for (let attempt = 0; attempt < OAUTH_RETRY_CONFIG.maxAttempts; attempt++) {
       try {
-        const response = await firstValueFrom(
-          this.httpService.post(tokenUrl, {
-            client_id: clientId,
-            client_secret: clientSecret,
-            code,
-            redirect_uri: redirectUri,
-            grant_type: 'authorization_code',
-          }),
-        );
-        return response.data;
+        return await strategy.exchangeCode({
+          httpService: this.httpService,
+          clientId,
+          clientSecret,
+          code,
+          redirectUri,
+        });
       } catch (error) {
         lastError = error;
         if (attempt < OAUTH_RETRY_CONFIG.maxAttempts - 1) {
@@ -118,23 +127,24 @@ export class OAuthService {
         }
       }
     }
-    throw new BadRequestException(`OAuth token exchange failed: ${lastError?.message}`);
+    throw new BadRequestException(
+      `OAuth token exchange failed: ${lastError?.message}`,
+    );
   }
 
-  private async getUserInfoWithRetry(provider: OAuthProvider, accessToken: string): Promise<OAuthUserInfo> {
-    const userInfoUrl = PROVIDER_USERINFO_URLS[provider];
+  private async getUserInfoWithRetry(
+    provider: OAuthProvider,
+    accessToken: string,
+  ): Promise<OAuthUserInfo> {
+    const strategy = this.oauthStrategyFactory.getStrategy(provider);
 
-    let lastError: Error;
+    let lastError: Error | undefined;
     for (let attempt = 0; attempt < OAUTH_RETRY_CONFIG.maxAttempts; attempt++) {
       try {
-        const response = await firstValueFrom(
-          this.httpService.get(userInfoUrl, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }),
-        );
-
-        // Normalize user info from different providers
-        return this.normalizeUserInfo(provider, response.data);
+        return await strategy.getUserInfo({
+          httpService: this.httpService,
+          accessToken,
+        });
       } catch (error) {
         lastError = error;
         if (attempt < OAUTH_RETRY_CONFIG.maxAttempts - 1) {
@@ -142,33 +152,9 @@ export class OAuthService {
         }
       }
     }
-    throw new BadRequestException(`Failed to get user info: ${lastError?.message}`);
-  }
-
-  private normalizeUserInfo(provider: OAuthProvider, data: any): OAuthUserInfo {
-    switch (provider) {
-      case OAuthProvider.GITHUB:
-        return {
-          email: data.email,
-          name: data.name || data.login,
-          avatar: data.avatar_url,
-          providerId: String(data.id),
-        };
-      case OAuthProvider.GOOGLE:
-        return {
-          email: data.email,
-          name: data.name,
-          avatar: data.picture,
-          providerId: data.id,
-        };
-      case OAuthProvider.DISCORD:
-        return {
-          email: data.email,
-          name: data.username,
-          avatar: data.avatar ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png` : null,
-          providerId: data.id,
-        };
-    }
+    throw new BadRequestException(
+      `Failed to get user info: ${lastError?.message}`,
+    );
   }
 
   private async findOrCreateOAuthUser(
@@ -190,7 +176,12 @@ export class OAuthService {
       }
 
       // Link OAuth account to existing user
-      await this.linkOAuthAccount(existingUser.id, provider, userInfo, tokenResponse);
+      await this.linkOAuthAccount(
+        existingUser.id,
+        provider,
+        userInfo,
+        tokenResponse,
+      );
 
       // Update user info if changed
       const updatedUser = await this.prisma.user.update({
@@ -215,11 +206,17 @@ export class OAuthService {
           create: {
             accountId: userInfo.providerId,
             providerId: provider.toString(),
-            accessToken: await this.encryptionService.encrypt(tokenResponse.access_token),
+            accessToken: await this.encryptionService.encrypt(
+              tokenResponse.access_token,
+            ),
             refreshToken: tokenResponse.refresh_token
-              ? await this.encryptionService.encrypt(tokenResponse.refresh_token)
+              ? await this.encryptionService.encrypt(
+                  tokenResponse.refresh_token,
+                )
               : null,
-            accessTokenExpiresAt: new Date(Date.now() + tokenResponse.expires_in * 1000),
+            accessTokenExpiresAt: new Date(
+              Date.now() + tokenResponse.expires_in * 1000,
+            ),
             refreshTokenExpiresAt: tokenResponse.refresh_token
               ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
               : null,
@@ -252,11 +249,15 @@ export class OAuthService {
       await this.prisma.account.update({
         where: { id: existingAccount.id },
         data: {
-          accessToken: await this.encryptionService.encrypt(tokenResponse.access_token),
+          accessToken: await this.encryptionService.encrypt(
+            tokenResponse.access_token,
+          ),
           refreshToken: tokenResponse.refresh_token
             ? await this.encryptionService.encrypt(tokenResponse.refresh_token)
             : null,
-          accessTokenExpiresAt: new Date(Date.now() + tokenResponse.expires_in * 1000),
+          accessTokenExpiresAt: new Date(
+            Date.now() + tokenResponse.expires_in * 1000,
+          ),
         },
       });
     } else {
@@ -266,11 +267,15 @@ export class OAuthService {
           userId,
           accountId: userInfo.providerId,
           providerId: provider.toString(),
-          accessToken: await this.encryptionService.encrypt(tokenResponse.access_token),
+          accessToken: await this.encryptionService.encrypt(
+            tokenResponse.access_token,
+          ),
           refreshToken: tokenResponse.refresh_token
             ? await this.encryptionService.encrypt(tokenResponse.refresh_token)
             : null,
-          accessTokenExpiresAt: new Date(Date.now() + tokenResponse.expires_in * 1000),
+          accessTokenExpiresAt: new Date(
+            Date.now() + tokenResponse.expires_in * 1000,
+          ),
           refreshTokenExpiresAt: tokenResponse.refresh_token
             ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             : null,
