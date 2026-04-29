@@ -1,161 +1,307 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import {
+  NotificationChannel,
+  NotificationStatus,
+  NotificationTemplateType,
+  DeliveryReceipt,
+  NotificationLogEntry,
+} from './interfaces/notification.interface';
+import {
+  NotificationStrategyFactory,
+} from './strategies/notification-strategy.factory';
+import {
+  NotificationContext,
+} from './strategies/notification.strategy';
 
-export type EmailType =
-  | 'BOOKING_CONFIRMATION'
-  | 'REMINDER'
-  | 'CANCELLATION'
-  | 'REVIEW_REQUEST';
+type AppointmentInfo = NotificationContext['appointment'];
 
-export interface EmailData {
-  appointmentId: string;
-  clientName: string;
-  clientEmail: string;
-  barberName: string;
-  serviceName: string;
-  dateTime: Date;
-  totalPrice: number;
-}
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  backoffMs: [60000, 300000, 900000], // 1min, 5min, 15min
+};
 
-export interface SendEmailResult {
-  success: boolean;
-  sentAt?: Date;
-  scheduledFor?: Date;
-  content?: string;
-}
-
-export interface QueueEmailResult {
-  queued: boolean;
-  scheduledFor?: Date;
-}
-
-// Simple in-memory queue for dev
-const emailQueue: Array<{
-  template: EmailType;
-  data: EmailData;
-  scheduledAt: Date;
-}> = [];
+const WHATSAPP_TEMPLATES = {
+  [NotificationTemplateType.CANCELLATION]: {
+    content:
+      'Olá {{clientName}}, sua marcação de {{serviceName}} foi cancelada. Data: {{dateTime}}. Em caso de dúvidas, entre em contato.',
+    variables: ['clientName', 'serviceName', 'dateTime'],
+  },
+  [NotificationTemplateType.ALTERATION]: {
+    content:
+      'Olá {{clientName}}, sua marcação de {{serviceName}} foi alterada. Nova hora: {{newTime}}. Anterior: {{oldTime}}.',
+    variables: ['clientName', 'serviceName', 'newTime', 'oldTime'],
+  },
+  [NotificationTemplateType.REMINDER_2H]: {
+    content:
+      'Olá {{clientName}}, lembrete: sua marcação de {{serviceName}} é em 2 horas ({{dateTime}}) na {{locationName}}. Nos vemos lá!',
+    variables: ['clientName', 'serviceName', 'dateTime', 'locationName'],
+  },
+};
 
 @Injectable()
 export class NotificationsService {
-  async sendBookingConfirmation(data: EmailData): Promise<SendEmailResult> {
-    if (!data.clientEmail || !data.clientEmail.includes('@')) {
-      throw new BadRequestException('Invalid email address');
+  constructor(
+    private configService: ConfigService,
+    private httpService: HttpService,
+    private notificationStrategyFactory: NotificationStrategyFactory,
+  ) {}
+
+  async sendNotification(
+    templateType: NotificationTemplateType,
+    context: NotificationContext,
+  ): Promise<{
+    status: NotificationStatus;
+    message?: string;
+    externalId?: string;
+  }> {
+    if (!context.user.whatsappOptIn) {
+      await this.logNotification({
+        userId: context.user.id,
+        appointmentId: context.appointment.id,
+        channel: NotificationChannel.WHATSAPP,
+        template: templateType,
+        status: NotificationStatus.SKIPPED,
+        attempts: 0,
+      });
+      return { status: NotificationStatus.SKIPPED };
     }
 
-    // Mock email content
-    const content = `
-      Prezado(a) ${data.clientName},
+    const strategy =
+      this.notificationStrategyFactory.getStrategy(templateType);
+    const message = strategy.buildMessage(context);
 
-      Seu agendamento foi confirmado!
-
-      Serviço: ${data.serviceName}
-      Barbeiro: ${data.barberName}
-      Data/Hora: ${data.dateTime.toLocaleString('pt-BR')}
-      Valor: R$ ${data.totalPrice.toFixed(2)}
-
-      Aguardamos sua visita!
-    `.trim();
-
-    // Log in dev mode
-    console.log('[Email - BOOKING_CONFIRMATION]', content);
-
-    return {
-      success: true,
-      sentAt: new Date(),
-      content,
-    };
-  }
-
-  async sendReminder(data: EmailData): Promise<SendEmailResult> {
-    // Don't send if appointment is cancelled
-    if (data.appointmentId.startsWith('cancelled-')) {
-      return { success: false };
-    }
-
-    const reminderTime = new Date(
-      data.dateTime.getTime() - 24 * 60 * 60 * 1000,
+    return this.sendWhatsAppWithRetry(
+      context.user.phone,
+      message,
+      context.appointment.id,
+      templateType,
     );
-    const content = `
-      Prezado(a) ${data.clientName},
+  }
 
-      Lembramos que você tem um agendamento amanhã!
+  async sendCancellationNotification(
+    appointment: AppointmentInfo,
+    user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
+  ): Promise<{
+    status: NotificationStatus;
+    message?: string;
+    externalId?: string;
+  }> {
+    return this.sendNotification(
+      NotificationTemplateType.CANCELLATION,
+      { appointment, user },
+    );
+  }
 
-      Serviço: ${data.serviceName}
-      Barbeiro: ${data.barberName}
-      Data/Hora: ${data.dateTime.toLocaleString('pt-BR')}
+  async sendAlterationNotification(
+    appointment: AppointmentInfo,
+    user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
+    oldDateTime: Date,
+    newDateTime: Date,
+  ): Promise<{
+    status: NotificationStatus;
+    message: string;
+    externalId?: string;
+  }> {
+    return this.sendNotification(
+      NotificationTemplateType.ALTERATION,
+      { appointment, user, oldDateTime, newDateTime },
+    ) as Promise<{
+      status: NotificationStatus;
+      message: string;
+      externalId?: string;
+    }>;
+  }
 
-      Até lá!
-    `.trim();
+  async sendReminderNotification(
+    appointment: AppointmentInfo,
+    user: { id: string; name: string; phone: string; whatsappOptIn: boolean },
+  ): Promise<{
+    status: NotificationStatus;
+    message: string;
+    externalId?: string;
+  }> {
+    return this.sendNotification(
+      NotificationTemplateType.REMINDER_2H,
+      { appointment, user },
+    ) as Promise<{
+      status: NotificationStatus;
+      message: string;
+      externalId?: string;
+    }>;
+  }
 
-    console.log('[Email - REMINDER]', content);
+  private async sendWhatsAppWithRetry(
+    phone: string,
+    message: string,
+    appointmentId: string,
+    templateType: NotificationTemplateType = NotificationTemplateType.CANCELLATION,
+  ): Promise<{
+    status: NotificationStatus;
+    message: string;
+    externalId?: string;
+  }> {
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt < RETRY_CONFIG.maxAttempts; attempt++) {
+      try {
+        const receipt = await this.sendTwilioWhatsApp(phone, message);
+
+        await this.logNotification({
+          userId: '', // Will be filled by caller
+          appointmentId,
+          channel: NotificationChannel.WHATSAPP,
+          template: templateType,
+          status: NotificationStatus.QUEUED,
+          externalId: receipt.externalId,
+          attempts: attempt + 1,
+        });
+
+        return {
+          status: NotificationStatus.QUEUED,
+          message,
+          externalId: receipt.externalId,
+        };
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < RETRY_CONFIG.maxAttempts - 1) {
+          await this.delay(RETRY_CONFIG.backoffMs[attempt]);
+        }
+      }
+    }
+
+    // All retries failed
+    await this.logNotification({
+      userId: '',
+      appointmentId,
+      channel: NotificationChannel.WHATSAPP,
+      template: templateType,
+      status: NotificationStatus.FAILED,
+      attempts: RETRY_CONFIG.maxAttempts,
+      errorMessage: lastError?.message,
+    });
+
+    throw new BadRequestException(
+      `Notification failed after ${RETRY_CONFIG.maxAttempts} attempts: ${lastError?.message}`,
+    );
+  }
+
+  private async sendTwilioWhatsApp(
+    phone: string,
+    message: string,
+  ): Promise<DeliveryReceipt> {
+    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID') ?? '';
+    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN') ?? '';
+    const fromNumber = this.configService.get<string>('TWILIO_WHATSAPP_FROM') ?? '';
+
+    const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+
+    const response = await firstValueFrom(
+      this.httpService.post(
+        url,
+        new URLSearchParams({
+          To: `whatsapp:${phone}`,
+          From: `whatsapp:${fromNumber}`,
+          Body: message,
+        }),
+        {
+          auth: { username: accountSid, password: authToken },
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        },
+      ),
+    );
 
     return {
-      success: true,
-      sentAt: new Date(),
-      scheduledFor: reminderTime,
-      content,
+      externalId: response.data.sid,
+      status: NotificationStatus.SENT,
+      timestamp: new Date(),
     };
   }
 
-  async sendCancellation(data: EmailData): Promise<SendEmailResult> {
-    const content = `
-      Prezado(a) ${data.clientName},
+  private interpolateTemplate(
+    templateType: NotificationTemplateType,
+    variables: Record<string, string>,
+  ): string {
+    const template = WHATSAPP_TEMPLATES[templateType];
+    let content = template.content;
 
-      Seu agendamento foi cancelado.
+    for (const [key, value] of Object.entries(variables)) {
+      content = content.replace(`{{${key}}}`, value);
+    }
 
-      Serviço: ${data.serviceName}
-      Data/Hora: ${data.dateTime.toLocaleString('pt-BR')}
-
-      Em caso de dúvida sobre reembolso, entre em contato conosco.
-
-      Atenciosamente,
-      Seven7Barber
-    `.trim();
-
-    console.log('[Email - CANCELLATION]', content);
-
-    return {
-      success: true,
-      sentAt: new Date(),
-      content,
-    };
+    return content;
   }
 
-  async sendReviewRequest(data: EmailData): Promise<SendEmailResult> {
-    const reviewLink = `https://seven7barber.com/review/${data.appointmentId}`;
-    const content = `
-      Prezado(a) ${data.clientName},
+  private async logNotification(data: {
+    userId: string;
+    appointmentId: string;
+    channel: NotificationChannel;
+    template: NotificationTemplateType;
+    status: NotificationStatus;
+    externalId?: string;
+    attempts: number;
+    errorMessage?: string;
+  }): Promise<void> {
+    // In production, save to Prisma. For now, log to console.
+    console.log('[NotificationLog]', JSON.stringify(data));
+  }
 
-      Como foi sua experiência com a Avaliação?
-
-      Avalie nosso serviço: ${reviewLink}
-
-      Sua opinião é muito importante para nós!
-
-      Atenciosamente,
-      Seven7Barber
-    `.trim();
-
-    console.log('[Email - REVIEW_REQUEST]', content);
-
-    return {
-      success: true,
-      sentAt: new Date(),
-      content,
+  async handleTwilioWebhook(payload: {
+    MessageSid: string;
+    MessageStatus: string;
+    To?: string;
+  }): Promise<void> {
+    const statusMap: Record<string, NotificationStatus> = {
+      delivered: NotificationStatus.DELIVERED,
+      sent: NotificationStatus.SENT,
+      queued: NotificationStatus.QUEUED,
+      failed: NotificationStatus.FAILED,
+      undelivered: NotificationStatus.FAILED,
     };
+
+    const newStatus =
+      statusMap[payload.MessageStatus] || NotificationStatus.FAILED;
+
+    console.log(
+      `[Twilio Webhook] Sid: ${payload.MessageSid}, Status: ${newStatus}`,
+    );
+
+    // In production: update notification log in Prisma
+    // await prisma.notificationLog.updateMany({
+    //   where: { externalId: payload.MessageSid },
+    //   data: { status: newStatus, updatedAt: new Date() },
+    // });
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // Legacy email methods (kept for backward compatibility)
+  async sendBookingConfirmation(data: any): Promise<{ success: boolean }> {
+    console.log('[Email - BOOKING_CONFIRMATION]', data);
+    return { success: true };
+  }
+
+  async sendReminder(data: any): Promise<{ success: boolean }> {
+    console.log('[Email - REMINDER]', data);
+    return { success: true };
+  }
+
+  async sendCancellation(data: any): Promise<{ success: boolean }> {
+    console.log('[Email - CANCELLATION]', data);
+    return { success: true };
   }
 
   async queueEmail(
-    template: EmailType,
-    data: EmailData,
+    template: string,
+    data: any,
     delay?: number,
-  ): Promise<QueueEmailResult> {
-    const scheduledAt = new Date(Date.now() + (delay || 0));
-    emailQueue.push({ template, data, scheduledAt });
-
-    return {
-      queued: true,
-      scheduledFor: scheduledAt,
-    };
+  ): Promise<{ queued: boolean }> {
+    console.log('[Email Queue]', template, data, delay);
+    return { queued: true };
   }
 }

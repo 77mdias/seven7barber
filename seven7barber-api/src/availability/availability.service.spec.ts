@@ -66,7 +66,8 @@ describe('AvailabilityService', () => {
 
           const hasConflict = barberAppointments.some((appt: any) => {
             const apptTime = appt.dateTime;
-            const apptMins = apptTime.getUTCHours() * 60 + apptTime.getUTCMinutes();
+            const apptMins =
+              apptTime.getUTCHours() * 60 + apptTime.getUTCMinutes();
             const apptEndMins =
               apptMins + appt.service.duration + workingHours.bufferMinutes;
 

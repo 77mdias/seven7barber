@@ -1,16 +1,23 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createReview(data: {
-    appointmentId: string;
-    rating: number;
-    feedback?: string;
-    images?: string[];
-  }, userId: string) {
+  async createReview(
+    data: {
+      appointmentId: string;
+      rating: number;
+      feedback?: string;
+      images?: string[];
+    },
+    userId: string,
+  ) {
     if (data.rating < 1 || data.rating > 5) {
       throw new BadRequestException('Rating must be between 1 and 5');
     }

@@ -4,6 +4,22 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [2026-04-27] — PHASE-10: Future Enhancements Started
+
+### Added
+- PHASE-10 folder created: `docs/development/PHASES/PHASE-10/`
+- `phase.md` — Phase definition (6 future enhancement features)
+- `phase-board.md` — Task board (12 tasks, 2 per feature)
+- Features: Real OAuth, Push Notifications, Loyalty Program, Waiting List, Recurring Appointments, Multi-location
+
+### Changed
+- README.md: PHASE-09 marked ✅ COMPLETE (10/10 tasks), PHASE-10 added as 🔮 PROPOSTO
+- docs/roadmap/ROADMAP.md: Phase 10 timeline updated to Week 11+
+
+### Notes
+- PHASE-09 Security Hardening II complete (9/10 tasks, 1 deferred to PHASE-10)
+- OAuth encryption (REQ-HARD-05) deferred to PHASE-10 Real OAuth task
+
 ## [2026-04-26 18:00] — Documentation Sync
 
 ### Changed

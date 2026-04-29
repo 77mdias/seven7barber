@@ -21,6 +21,7 @@ describe('BookingService', () => {
       barberId: string;
       slotId: string;
       clientId: string;
+      locationId: string;
     }) {
       const service = await this.prisma.service.findUnique({
         where: { id: data.serviceId },
@@ -95,6 +96,7 @@ describe('BookingService', () => {
         barberId: 'barber-1',
         slotId: 'slot-1',
         clientId: 'client-1',
+        locationId: 'loc-1',
       });
 
       expect(result).toEqual(mockAppt);
@@ -109,6 +111,7 @@ describe('BookingService', () => {
           barberId: 'barber-1',
           slotId: 'slot-1',
           clientId: 'client-1',
+        locationId: 'loc-1',
         }),
       ).rejects.toThrow(NotFoundException);
     });
@@ -122,6 +125,7 @@ describe('BookingService', () => {
           barberId: 'invalid',
           slotId: 'slot-1',
           clientId: 'client-1',
+        locationId: 'loc-1',
         }),
       ).rejects.toThrow(NotFoundException);
     });
@@ -142,6 +146,7 @@ describe('BookingService', () => {
           barberId: 'barber-1',
           slotId: 'slot-1',
           clientId: 'client-1',
+        locationId: 'loc-1',
         }),
       ).rejects.toThrow(BadRequestException);
     });
@@ -165,6 +170,7 @@ describe('BookingService', () => {
           barberId: 'barber-1',
           slotId: 'slot-1',
           clientId: 'client-1',
+        locationId: 'loc-1',
         });
       } catch (e) {
         // Slot should NOT have been updated

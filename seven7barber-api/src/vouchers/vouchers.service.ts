@@ -1,9 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { VoucherStrategyFactory } from './strategies/voucher-strategy.factory';
 
 @Injectable()
 export class VouchersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly voucherStrategyFactory: VoucherStrategyFactory,
+  ) {}
 
   async validateVoucher(code: string, userId?: string) {
     // L4: Case-insensitive lookup - codes are stored uppercase
@@ -54,55 +58,9 @@ export class VouchersService {
     const validation = await this.validateVoucher(code, userId);
     const voucher = validation.voucher;
 
-    if (voucher.type === 'DISCOUNT_PERCENTAGE') {
-      const discount = appointmentValue
-        ? (appointmentValue * voucher.value) / 100
-        : 0;
-      return {
-        discount: parseFloat(discount.toFixed(2)),
-        finalValue: appointmentValue
-          ? parseFloat((appointmentValue - discount).toFixed(2))
-          : 0,
-        type: 'percentage',
-        value: voucher.value,
-      };
-    }
-
-    if (voucher.type === 'DISCOUNT_FIXED') {
-      const discount = voucher.value;
-      return {
-        discount: parseFloat(discount.toString()),
-        finalValue: appointmentValue
-          ? parseFloat(Math.max(0, appointmentValue - discount).toFixed(2))
-          : 0,
-        type: 'fixed',
-        value: voucher.value,
-      };
-    }
-
-    if (voucher.type === 'FREE_SERVICE') {
-      return {
-        discount: appointmentValue || 0,
-        finalValue: 0,
-        type: 'free_service',
-        value: 0,
-      };
-    }
-
-    if (voucher.type === 'CASHBACK') {
-      const cashback = appointmentValue
-        ? (appointmentValue * voucher.value) / 100
-        : 0;
-      return {
-        discount: 0, // Cashback doesn't reduce current appointment
-        cashbackAmount: parseFloat(cashback.toFixed(2)),
-        finalValue: appointmentValue || 0,
-        type: 'cashback',
-        value: voucher.value,
-      };
-    }
-
-    return { discount: 0, finalValue: appointmentValue || 0 };
+    // Strategy pattern: delegate discount calculation to the voucher type strategy
+    const strategy = this.voucherStrategyFactory.getStrategy(voucher.type);
+    return strategy.apply(voucher.value, appointmentValue);
   }
 
   async createVoucher(data: {

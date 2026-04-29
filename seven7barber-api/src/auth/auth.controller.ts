@@ -12,7 +12,11 @@ import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
-import { LoginDtoSchema, RegisterDtoSchema, RefreshTokenDtoSchema } from './dto/auth.dto';
+import {
+  LoginDtoSchema,
+  RegisterDtoSchema,
+  RefreshTokenDtoSchema,
+} from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {

@@ -7,6 +7,14 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from './roles.guard';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { OAuthService } from './oauth.service';
+import { OAuthController } from './oauth.controller';
+import { EncryptionService } from './encryption.service';
+import { HttpModule } from '@nestjs/axios';
+import { GitHubOAuthStrategy } from './strategies/github-oauth.strategy';
+import { GoogleOAuthStrategy } from './strategies/google-oauth.strategy';
+import { DiscordOAuthStrategy } from './strategies/discord-oauth.strategy';
+import { OAuthStrategyFactory } from './strategies/oauth-strategy.factory';
 
 const jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret) {
@@ -24,13 +32,30 @@ if (!jwtSecret) {
     ThrottlerModule.forRoot([
       {
         name: 'auth',
-        ttl: 60000, // 1 minute in milliseconds
-        limit: 5, // 5 attempts per minute
+        ttl: 60000,
+        limit: 5,
       },
     ]),
+    HttpModule,
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard],
-  controllers: [AuthController],
-  exports: [AuthService, RolesGuard, ThrottlerModule],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    OAuthService,
+    EncryptionService,
+    GitHubOAuthStrategy,
+    GoogleOAuthStrategy,
+    DiscordOAuthStrategy,
+    OAuthStrategyFactory,
+  ],
+  controllers: [AuthController, OAuthController],
+  exports: [
+    AuthService,
+    RolesGuard,
+    ThrottlerModule,
+    OAuthService,
+    EncryptionService,
+  ],
 })
 export class AuthModule {}

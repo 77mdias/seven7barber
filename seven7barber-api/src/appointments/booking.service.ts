@@ -7,6 +7,7 @@ export interface CreateBookingDto {
   barberId: string;
   dateTime: Date;
   clientId: string;
+  locationId: string;
   notes?: string;
 }
 
@@ -42,6 +43,7 @@ export class BookingService {
         serviceId: data.serviceId,
         clientId: data.clientId,
         barberId: data.barberId,
+        locationId: data.locationId,
         dateTime: data.dateTime,
         notes: data.notes,
         status: 'SCHEDULED',

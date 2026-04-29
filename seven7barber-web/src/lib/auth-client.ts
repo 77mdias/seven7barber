@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -15,6 +15,7 @@ interface Session {
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
   const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
+  const fetchRef = useRef(false);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -36,8 +37,11 @@ export function useSession() {
   }, []);
 
   useEffect(() => {
-    fetchSession();
-  }, [fetchSession]);
+    if (!fetchRef.current) {
+      fetchRef.current = true;
+      fetchSession();
+    }
+  }, []);
 
   return { session, status, refetch: fetchSession };
 }

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { ServiceCard } from "@/components/services/service-card";
 import { Service } from "@/components/services/service-card";
 
@@ -51,9 +53,9 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             <span className="font-heading text-2xl font-bold text-[#732F3B]">7</span>
             <span className="font-heading text-2xl font-bold text-white">BARBER</span>
           </div>
-          <a href="/" className="text-sm font-medium text-[#732F3B] hover:text-white uppercase tracking-wide transition-colors">
+          <Link href="/" className="text-sm font-medium text-[#732F3B] hover:text-white uppercase tracking-wide transition-colors">
             Voltar
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -76,7 +78,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             {/* Category filters */}
             <div className="flex gap-2 flex-wrap">
               {CATEGORIES.map((cat) => (
-                <a
+                <Link
                   key={cat.id}
                   href={`/services${cat.id === 'all' ? '' : `?category=${cat.id}`}`}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
@@ -86,7 +88,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                   }`}
                 >
                   {cat.label}
-                </a>
+                </Link>
               ))}
             </div>
 
