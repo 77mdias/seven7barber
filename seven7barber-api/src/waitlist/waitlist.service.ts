@@ -59,7 +59,7 @@ export class WaitlistService {
       },
     });
 
-    return { id: entry.id, position: entry.position, status: entry.status };
+    return { id: entry.id, position: entry.position, status: entry.status as WaitlistStatus };
   }
 
   async leaveWaitlist(entryId: string, userId: string): Promise<void> {

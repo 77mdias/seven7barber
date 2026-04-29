@@ -32,7 +32,7 @@ export class DiscordOAuthStrategy implements OAuthProviderStrategy {
     code: string;
     redirectUri: string;
   }): Promise<OAuthTokenResponse> {
-    const response = await firstValueFrom(
+    const response: any = await firstValueFrom(
       params.httpService.post('https://discord.com/api/oauth2/token', {
         client_id: params.clientId,
         client_secret: params.clientSecret,
@@ -48,7 +48,7 @@ export class DiscordOAuthStrategy implements OAuthProviderStrategy {
     httpService: any;
     accessToken: string;
   }): Promise<OAuthUserInfo> {
-    const response = await firstValueFrom(
+    const response: any = await firstValueFrom(
       params.httpService.get('https://discord.com/api/users/@me', {
         headers: { Authorization: `Bearer ${params.accessToken}` },
       }),

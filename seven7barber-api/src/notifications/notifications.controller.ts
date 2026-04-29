@@ -1,9 +1,10 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import {
   NotificationsService,
-  EmailType,
-  EmailData,
 } from './notifications.service';
+
+export type EmailType = 'BOOKING_CONFIRMATION' | 'REMINDER' | 'CANCELLATION' | 'REVIEW_REQUEST';
+export type EmailData = Record<string, any>;
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -32,7 +33,9 @@ export class NotificationsController {
       case 'CANCELLATION':
         return this.notificationsService.sendCancellation(data);
       case 'REVIEW_REQUEST':
-        return this.notificationsService.sendReviewRequest(data);
+        return (this.notificationsService as any).sendReviewRequest
+          ? (this.notificationsService as any).sendReviewRequest(data)
+          : { success: false, error: 'Review request not implemented' };
       default:
         return { success: false, error: 'Unknown template' };
     }

@@ -108,7 +108,7 @@ export class LoyaltyService {
     });
 
     // Update account with tier recalculation
-    const previousTier = account.currentTier;
+    const previousTier = account.currentTier as LoyaltyTier;
     const newTotalPoints = account.totalPoints + points;
     const newTier = this.calculateTier(newTotalPoints);
     const tierUpgrade: TierUpgradeResult = {
@@ -134,7 +134,7 @@ export class LoyaltyService {
       },
     });
 
-    return { ...transaction, metadata: { tierUpgrade } };
+    return { ...transaction, metadata: { tierUpgrade } } as LoyaltyTransaction;
   }
 
   async redeemPoints(

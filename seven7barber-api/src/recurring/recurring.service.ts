@@ -96,7 +96,7 @@ export class RecurringService {
       },
     });
 
-    return { id: pattern.id, nextRunDate: pattern.nextRunDate };
+    return { id: pattern.id, nextRunDate: pattern.nextRunDate! };
   }
 
   async handleSlotUnavailable(

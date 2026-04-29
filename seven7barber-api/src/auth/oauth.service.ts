@@ -38,8 +38,8 @@ export class OAuthService {
   getAuthorizationUrl(provider: OAuthProvider): string {
     const clientId = this.configService.get<string>(
       `OAUTH_${provider.toUpperCase()}_CLIENT_ID`,
-    );
-    const redirectUri = this.configService.get<string>('OAUTH_REDIRECT_URI');
+    )!;
+    const redirectUri = this.configService.get<string>('OAUTH_REDIRECT_URI')!;
     const scope = OAUTH_SCOPES[provider];
     const state = this.generateState();
 
@@ -103,11 +103,11 @@ export class OAuthService {
   ): Promise<OAuthTokenResponse> {
     const clientId = this.configService.get<string>(
       `OAUTH_${provider.toUpperCase()}_CLIENT_ID`,
-    );
+    )!;
     const clientSecret = this.configService.get<string>(
       `OAUTH_${provider.toUpperCase()}_CLIENT_SECRET`,
-    );
-    const redirectUri = this.configService.get<string>('OAUTH_REDIRECT_URI');
+    )!;
+    const redirectUri = this.configService.get<string>('OAUTH_REDIRECT_URI')!;
     const strategy = this.oauthStrategyFactory.getStrategy(provider);
 
     let lastError: Error | undefined;

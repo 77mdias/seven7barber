@@ -32,7 +32,7 @@ export class GitHubOAuthStrategy implements OAuthProviderStrategy {
     code: string;
     redirectUri: string;
   }): Promise<OAuthTokenResponse> {
-    const response = await firstValueFrom(
+    const response: any = await firstValueFrom(
       params.httpService.post(
         'https://github.com/login/oauth/access_token',
         {
@@ -51,7 +51,7 @@ export class GitHubOAuthStrategy implements OAuthProviderStrategy {
     httpService: any;
     accessToken: string;
   }): Promise<OAuthUserInfo> {
-    const response = await firstValueFrom(
+    const response: any = await firstValueFrom(
       params.httpService.get('https://api.github.com/user', {
         headers: { Authorization: `Bearer ${params.accessToken}` },
       }),

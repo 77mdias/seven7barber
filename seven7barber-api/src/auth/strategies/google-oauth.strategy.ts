@@ -32,7 +32,7 @@ export class GoogleOAuthStrategy implements OAuthProviderStrategy {
     code: string;
     redirectUri: string;
   }): Promise<OAuthTokenResponse> {
-    const response = await firstValueFrom(
+    const response: any = await firstValueFrom(
       params.httpService.post('https://oauth2.googleapis.com/token', {
         client_id: params.clientId,
         client_secret: params.clientSecret,
@@ -48,7 +48,7 @@ export class GoogleOAuthStrategy implements OAuthProviderStrategy {
     httpService: any;
     accessToken: string;
   }): Promise<OAuthUserInfo> {
-    const response = await firstValueFrom(
+    const response: any = await firstValueFrom(
       params.httpService.get(
         'https://www.googleapis.com/oauth2/v2/userinfo',
         {
