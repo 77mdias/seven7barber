@@ -1,4 +1,8 @@
-import { LoyaltyTier, TransactionType, RedemptionType } from '../enums/loyalty.enums';
+import {
+  LoyaltyTier,
+  TransactionType,
+  RedemptionType,
+} from '../enums/loyalty.enums';
 
 export interface LoyaltyTransaction {
   id: string;

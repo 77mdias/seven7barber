@@ -47,24 +47,39 @@ export const TIER_CONFIG: Record<LoyaltyTier, TierInfo> = {
     name: LoyaltyTier.OURO,
     minPoints: 1500,
     discountPercentage: 10,
-    benefits: ['Pontos de conversão', '10% desconto em serviços', 'Priority booking'],
+    benefits: [
+      'Pontos de conversão',
+      '10% desconto em serviços',
+      'Priority booking',
+    ],
   },
   [LoyaltyTier.DIAMANTE]: {
     name: LoyaltyTier.DIAMANTE,
     minPoints: 5000,
     discountPercentage: 15,
-    benefits: ['Pontos de conversão', '15% desconto', 'Priority booking', 'Early access'],
+    benefits: [
+      'Pontos de conversão',
+      '15% desconto',
+      'Priority booking',
+      'Early access',
+    ],
   },
   [LoyaltyTier.RADIANTE]: {
     name: LoyaltyTier.RADIANTE,
     minPoints: 10000,
     discountPercentage: 20,
-    benefits: ['Pontos de conversão', '20% desconto', 'Priority booking', 'Early access', 'VIP treatment'],
+    benefits: [
+      'Pontos de conversão',
+      '20% desconto',
+      'Priority booking',
+      'Early access',
+      'VIP treatment',
+    ],
   },
 };
 
 export const POINTS_CONFIG = {
-  CONVERSION_RATE: 0.10, // R$0.10 per point (50 pts = R$5)
+  CONVERSION_RATE: 0.1, // R$0.10 per point (50 pts = R$5)
   REDEEM_MIN_POINTS: 50,
   POINTS_TO_R5: 50, // 50 points = R$5
   EXPIRY_MONTHS_CONVERSION: 2,
@@ -80,5 +95,9 @@ export const EARN_POINTS = {
 export const FREE_SERVICES = {
   500: { name: 'Corte básico', duration: 30, pointsRequired: 500 },
   1000: { name: 'Corte + barba', duration: 60, pointsRequired: 1000 },
-  2000: { name: 'Tratamento capilar premium', duration: 90, pointsRequired: 2000 },
+  2000: {
+    name: 'Tratamento capilar premium',
+    duration: 90,
+    pointsRequired: 2000,
+  },
 } as const;

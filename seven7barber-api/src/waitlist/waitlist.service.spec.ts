@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WaitlistService } from './waitlist.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { WaitlistStatus } from './interfaces/waitlist.interface';
 
 describe('WaitlistService', () => {
@@ -99,19 +103,38 @@ describe('WaitlistService', () => {
   describe('C3 | RED | should notify top 3 when slot opens | ✅ FAIL', () => {
     it('should notify first 3 entries in queue', async () => {
       const queueKey = 'loc-1:svc-1:barber-1';
+      // Mock only top 3 entries (code uses take: 3)
       const mockEntries = [
-        { id: 'entry-1', position: 1, userId: 'user-1', status: WaitlistStatus.WAITING },
-        { id: 'entry-2', position: 2, userId: 'user-2', status: WaitlistStatus.WAITING },
-        { id: 'entry-3', position: 3, userId: 'user-3', status: WaitlistStatus.WAITING },
-        { id: 'entry-4', position: 4, userId: 'user-4', status: WaitlistStatus.WAITING },
+        {
+          id: 'entry-1',
+          position: 1,
+          userId: 'user-1',
+          status: WaitlistStatus.WAITING,
+        },
+        {
+          id: 'entry-2',
+          position: 2,
+          userId: 'user-2',
+          status: WaitlistStatus.WAITING,
+        },
+        {
+          id: 'entry-3',
+          position: 3,
+          userId: 'user-3',
+          status: WaitlistStatus.WAITING,
+        },
+        // entry-4 should NOT be included - code uses take: 3
       ];
 
-      prismaService.waitlistEntry.findMany.mockResolvedValue(mockEntries as any);
+      prismaService.waitlistEntry.findMany.mockResolvedValue(
+        mockEntries as any,
+      );
       prismaService.waitlistEntry.update.mockResolvedValue({} as any);
 
       const result = await service.notifyTopWhenSlotOpens(queueKey);
 
       expect(prismaService.waitlistEntry.update).toHaveBeenCalledTimes(3);
+      expect(result).toHaveLength(3);
     });
   });
 
@@ -207,7 +230,12 @@ describe('WaitlistService', () => {
       } as any);
 
       prismaService.waitlistEntry.findMany.mockResolvedValue([
-        { id: 'entry-2', position: 2, userId: 'user-2', status: WaitlistStatus.WAITING },
+        {
+          id: 'entry-2',
+          position: 2,
+          userId: 'user-2',
+          status: WaitlistStatus.WAITING,
+        },
       ] as any);
 
       await service.handleExpiration(entryId);

@@ -79,7 +79,9 @@ export class AdminService {
       const start = new Date(filters.startDate);
       const end = new Date(filters.endDate);
       if (start > end) {
-        throw new BadRequestException('startDate must be before or equal to endDate');
+        throw new BadRequestException(
+          'startDate must be before or equal to endDate',
+        );
       }
     }
 
@@ -124,7 +126,9 @@ export class AdminService {
     // Business rule: COMPLETED appointments cannot be changed
     const current = await this.prisma.appointment.findUnique({ where: { id } });
     if (current?.status === 'COMPLETED') {
-      throw new BadRequestException('Cannot change status of completed appointment');
+      throw new BadRequestException(
+        'Cannot change status of completed appointment',
+      );
     }
 
     return this.prisma.appointment.update({

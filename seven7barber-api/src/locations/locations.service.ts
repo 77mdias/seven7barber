@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminRole, OpeningHours } from './interfaces/location.interface';
 
@@ -32,7 +36,9 @@ export class LocationsService {
   }
 
   async setFavoriteLocation(userId: string, locationId: string): Promise<any> {
-    const location = await this.prisma.location.findUnique({ where: { id: locationId } });
+    const location = await this.prisma.location.findUnique({
+      where: { id: locationId },
+    });
     if (!location) {
       throw new NotFoundException('Location not found');
     }
@@ -115,13 +121,17 @@ export class LocationsService {
     });
   }
 
-  async getAggregatedStats(userId: string): Promise<{ totalLocations: number; locations: any[] }> {
+  async getAggregatedStats(
+    userId: string,
+  ): Promise<{ totalLocations: number; locations: any[] }> {
     const admin = await this.prisma.locationAdmin.findFirst({
       where: { userId },
     });
 
     if (!admin || admin.role !== AdminRole.SUPER_ADMIN) {
-      throw new BadRequestException('Not authorized. Super admin access required.');
+      throw new BadRequestException(
+        'Not authorized. Super admin access required.',
+      );
     }
 
     const locations = await this.prisma.location.findMany({
@@ -132,7 +142,7 @@ export class LocationsService {
 
     return {
       totalLocations: locations.length,
-      locations: locations.map(loc => ({
+      locations: locations.map((loc) => ({
         id: loc.id,
         name: loc.name,
         appointmentCount: loc.appointments.length,
@@ -140,8 +150,14 @@ export class LocationsService {
     };
   }
 
-  async createLocationAdmin(userId: string, locationId: string, role: AdminRole = AdminRole.LOCATION_ADMIN): Promise<any> {
-    const location = await this.prisma.location.findUnique({ where: { id: locationId } });
+  async createLocationAdmin(
+    userId: string,
+    locationId: string,
+    role: AdminRole = AdminRole.LOCATION_ADMIN,
+  ): Promise<any> {
+    const location = await this.prisma.location.findUnique({
+      where: { id: locationId },
+    });
     if (!location) {
       throw new NotFoundException('Location not found');
     }
@@ -164,7 +180,10 @@ export class LocationsService {
     // In production: handle existing bookings gracefully
   }
 
-  async updateOpeningHours(locationId: string, hours: OpeningHours[]): Promise<any> {
+  async updateOpeningHours(
+    locationId: string,
+    hours: OpeningHours[],
+  ): Promise<any> {
     return this.prisma.location.update({
       where: { id: locationId },
       data: { openingHours: hours as any },

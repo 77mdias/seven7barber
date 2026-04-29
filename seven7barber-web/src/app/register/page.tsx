@@ -23,8 +23,8 @@ export default function RegisterPage() {
     try {
       await signUp(email, password, name);
       router.push("/login");
-    } catch (err: any) {
-      setError(err.message || "Erro desconhecido");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
       setIsLoading(false);
     }

@@ -74,8 +74,16 @@ describe('LocationsService', () => {
       const userId = 'user-fav';
       const locationId = 'loc-1';
 
-      prismaService.user.findUnique.mockResolvedValue({ id: userId, favoriteLocationId: null } as any);
-      prismaService.user.update.mockResolvedValue({ id: userId, favoriteLocationId: locationId } as any);
+      // Mock location exists check
+      prismaService.location.findUnique.mockResolvedValue({
+        id: locationId,
+        name: 'Seven7Barber Norte',
+        isActive: true,
+      } as any);
+      prismaService.user.update.mockResolvedValue({
+        id: userId,
+        favoriteLocationId: locationId,
+      } as any);
 
       const result = await service.setFavoriteLocation(userId, locationId);
 
@@ -88,15 +96,16 @@ describe('LocationsService', () => {
       const userId = 'user-get-fav';
       const locationId = 'loc-2';
 
+      // Mock user with favoriteLocation include
       prismaService.user.findUnique.mockResolvedValue({
         id: userId,
         favoriteLocationId: locationId,
-      } as any);
-
-      prismaService.location.findUnique.mockResolvedValue({
-        id: locationId,
-        name: 'Seven7Barber Sul',
-        address: 'Rua Sul 456',
+        favoriteLocation: {
+          id: locationId,
+          name: 'Seven7Barber Sul',
+          address: 'Rua Sul 456',
+          isActive: true,
+        },
       } as any);
 
       const result = await service.getFavoriteLocation(userId);
@@ -109,19 +118,24 @@ describe('LocationsService', () => {
     it('should return only services available at selected location', async () => {
       const locationId = 'loc-services';
 
-      // Mock location with specific services
+      // Mock location check (isActive: true)
       prismaService.location.findUnique.mockResolvedValue({
         id: locationId,
-        services: [
-          { id: 'svc-1', name: 'Corte', isActive: true },
-          { id: 'svc-2', name: 'Barba', isActive: true },
-        ],
+        name: 'Seven7Barber Centro',
+        isActive: true,
       } as any);
+
+      // Mock services query
+      prismaService.service = prismaService.service || {};
+      prismaService.service.findMany = jest.fn().mockResolvedValue([
+        { id: 'svc-1', name: 'Corte', isActive: true },
+        { id: 'svc-2', name: 'Barba', isActive: true },
+      ] as any);
 
       const services = await service.getLocationServices(locationId);
 
       expect(services).toHaveLength(2);
-      expect(services.map(s => s.name)).toContain('Corte');
+      expect(services.map((s: any) => s.name)).toContain('Corte');
     });
   });
 
@@ -131,11 +145,16 @@ describe('LocationsService', () => {
 
       prismaService.location.findUnique.mockResolvedValue({
         id: locationId,
-        barbers: [
-          { id: 'barber-1', name: 'João', isActive: true },
-          { id: 'barber-2', name: 'Maria', isActive: true },
-        ],
+        name: 'Seven7Barber Centro',
+        isActive: true,
       } as any);
+
+      // Mock barbers query
+      prismaService.user = prismaService.user || {};
+      prismaService.user.findMany = jest.fn().mockResolvedValue([
+        { id: 'barber-1', name: 'João', role: 'BARBER', isActive: true },
+        { id: 'barber-2', name: 'Maria', role: 'BARBER', isActive: true },
+      ] as any);
 
       const barbers = await service.getLocationBarbers(locationId);
 
@@ -241,8 +260,9 @@ describe('LocationsService', () => {
         isActive: false,
       } as any);
 
-      await expect(service.getLocationServices(locationId))
-        .rejects.toThrow(BadRequestException);
+      await expect(service.getLocationServices(locationId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -251,6 +271,11 @@ describe('LocationsService', () => {
       const userId = 'user-new-admin';
       const locationId = 'loc-1';
 
+      prismaService.location.findUnique.mockResolvedValue({
+        id: locationId,
+        name: 'Seven7Barber Norte',
+        isActive: true,
+      } as any);
       prismaService.locationAdmin.create.mockResolvedValue({
         id: 'admin-new',
         userId,

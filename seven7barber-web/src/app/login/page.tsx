@@ -35,8 +35,8 @@ export default function LoginPage() {
       await refetch();
       router.push("/");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Erro ao fazer login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao fazer login");
     }
   };
 

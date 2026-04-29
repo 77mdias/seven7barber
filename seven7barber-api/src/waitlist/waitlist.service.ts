@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { WaitlistStatus } from './interfaces/waitlist.interface';
 
@@ -100,7 +105,9 @@ export class WaitlistService {
 
     const notifiedIds: string[] = [];
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + WAITLIST_CONFIG.notificationTimeoutMs);
+    const expiresAt = new Date(
+      now.getTime() + WAITLIST_CONFIG.notificationTimeoutMs,
+    );
 
     for (const entry of waitingEntries) {
       await this.prisma.waitlistEntry.update({
@@ -127,7 +134,9 @@ export class WaitlistService {
     }
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + WAITLIST_CONFIG.notificationTimeoutMs);
+    const expiresAt = new Date(
+      now.getTime() + WAITLIST_CONFIG.notificationTimeoutMs,
+    );
 
     await this.prisma.waitlistEntry.update({
       where: { id: entryId },
@@ -164,7 +173,10 @@ export class WaitlistService {
     await this.notifyTopWhenSlotOpens(queueKey);
   }
 
-  async confirmFromWaitlist(entryId: string, slotDateTime: Date): Promise<{ status: WaitlistStatus }> {
+  async confirmFromWaitlist(
+    entryId: string,
+    slotDateTime: Date,
+  ): Promise<{ status: WaitlistStatus }> {
     const entry = await this.prisma.waitlistEntry.findUnique({
       where: { id: entryId },
     });
@@ -192,7 +204,9 @@ export class WaitlistService {
     return { status: WaitlistStatus.CONFIRMED };
   }
 
-  async handleSlotCancellation(appointmentId: string): Promise<{ holdStatus: string; holdDurationMs: number }> {
+  async handleSlotCancellation(
+    appointmentId: string,
+  ): Promise<{ holdStatus: string; holdDurationMs: number }> {
     // Hold slot for waitlist first (5 min), then release to general availability
     // In production, would mark slot as WAITLIST_HOLD temporarily
 
@@ -202,7 +216,10 @@ export class WaitlistService {
     };
   }
 
-  async getQueuePosition(userId: string, queueKey: string): Promise<number | null> {
+  async getQueuePosition(
+    userId: string,
+    queueKey: string,
+  ): Promise<number | null> {
     const [locationId, serviceId, barberId] = queueKey.split(':');
 
     const entry = await this.prisma.waitlistEntry.findFirst({
